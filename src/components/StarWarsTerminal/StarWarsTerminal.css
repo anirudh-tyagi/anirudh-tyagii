@@ -1,0 +1,17 @@
+.star-wars-terminal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: auto;
+    /* Allow interaction */
+    z-index: -1;
+    background-color: #000;
+    /* Deep space black */
+    overflow: hidden;
+}
+
+.star-wars-terminal canvas {
+    display: block;
+}

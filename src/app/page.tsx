@@ -1,66 +1,40 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+'use client';
+
+import dynamic from 'next/dynamic';
+import TextType from '@/components/TextType';
+import DockNav from '@/components/DockNav';
+import './terminal.css';
+
+const Lottie = dynamic(() => import('lottie-react'), { ssr: false });
+import catAnimation from '../../public/cat.json';
 
 export default function Home() {
+  const welcomeText = `Hey, welcome 👋 I'm Meso :)
+This is Anirudhs corner of the internet, here he share his work, his ideas, his experiments, and the things he enjoys beyond code...`;
+
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className={styles.intro}>
-          <h1>To get started, edit the page.tsx file.</h1>
-          <p>
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <main className="dark-container">
+      {/* Welcome Section - Top Left */}
+      <div className="welcome-section">
+        <div className="welcome-content">
+          <div className="cat-animation">
+            <Lottie animationData={catAnimation} loop={true} />
+          </div>
+          <TextType
+            text={welcomeText}
+            typingSpeed={40}
+            initialDelay={500}
+            loop={false}
+            showCursor={true}
+            cursorCharacter="▌"
+            cursorBlinkDuration={0.6}
+            className="welcome-text"
+          />
         </div>
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className={styles.secondary}
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+      </div>
+
+      {/* Dock Navigation */}
+      <DockNav />
+    </main>
   );
 }
