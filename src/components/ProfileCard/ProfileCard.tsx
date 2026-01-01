@@ -64,7 +64,7 @@ const ProfileCardComponent = ({
     const wrapRef = useRef<HTMLDivElement>(null);
     const shellRef = useRef<HTMLDivElement>(null);
 
-    const enterTimerRef = useRef<NodeJS.Timeout | null>(null);
+    const enterTimerRef = useRef<number | null>(null);
     const leaveRafRef = useRef<number | null>(null);
 
     const tiltEngine = useMemo(() => {
