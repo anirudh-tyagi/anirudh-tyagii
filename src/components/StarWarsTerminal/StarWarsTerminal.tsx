@@ -40,17 +40,17 @@ interface Explosion {
 export default function StarWarsTerminal() {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [score, setScore] = useState(0);
-    const [highScore, setHighScore] = useState(0);
+    const [highScore, setHighScore] = useState(68);
 
     // Load High Score on Mount
     useEffect(() => {
         // Changed key to force reset from previous high scores
-        const saved = localStorage.getItem('sw-high-score-init');
-        let currentHigh = saved ? parseInt(saved, 10) : 842;
+        const saved = localStorage.getItem('sw-high-score-final-68');
+        let currentHigh = saved ? parseInt(saved, 10) : 68;
 
         // Ensure it's saved immediately if it was null
         if (!saved) {
-            localStorage.setItem('sw-high-score-init', '842');
+            localStorage.setItem('sw-high-score-final-68', '68');
         }
 
         setHighScore(currentHigh);
@@ -257,7 +257,7 @@ export default function StarWarsTerminal() {
                                 // Check High Score
                                 setHighScore(currentHigh => {
                                     if (newScore > currentHigh) {
-                                        localStorage.setItem('sw-high-score-init', newScore.toString());
+                                        localStorage.setItem('sw-high-score-final-68', newScore.toString());
                                         return newScore;
                                     }
                                     return currentHigh;
@@ -385,7 +385,7 @@ export default function StarWarsTerminal() {
             }}>
                 <div>SCORE: {score.toString().padStart(6, '0')}</div>
                 <div style={{ fontSize: '18px', color: '#00cc00', marginTop: '0px' }}>
-                    HIGHEST SCORE: {highScore.toString().padStart(6, '0')}
+                    TOP SCORE: {highScore.toString().padStart(6, '0')}
                 </div>
             </div>
             <canvas ref={canvasRef} />
