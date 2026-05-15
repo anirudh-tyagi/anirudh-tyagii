@@ -21,6 +21,8 @@ export const metadata: Metadata = {
 };
 
 import Background from "@/components/Background";
+import DockNav from "@/components/DockNav";
+import CatChat from "@/components/CatChat";
 
 export default function RootLayout({
   children,
@@ -31,6 +33,8 @@ export default function RootLayout({
     <html lang="en">
       <body className={jetbrainsMono.variable}>
         <Background />
+        <DockNav />
+        <CatChat />
         {children}
       </body>
     </html>

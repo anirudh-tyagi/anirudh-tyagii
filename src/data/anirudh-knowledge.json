@@ -1,0 +1,44 @@
+{
+  "personal_info": {
+    "name": "Anirudh Tyagi",
+    "role": "Machine Learning Engineer & Full-Stack Developer",
+    "education": {
+      "university": "Sai University",
+      "degree": "B.Tech in Computing and Data Science",
+      "duration": "2022 - 2026",
+      "cgpa": "8.0"
+    },
+    "hobbies": ["Coding", "Exploring Tech", "Photography", "Sports"]
+  },
+  "experience": [
+    {
+      "company": "Cadence Design Systems",
+      "role": "Software Engineer Intern - Allegro R&D Team",
+      "duration": "Jan 2026 - Present",
+      "details": "Developing production-grade features for Allegro System Capture (C++/Qt EDA application). Built a real-time schematic world-view widget and an expiry validation module."
+    },
+    {
+      "company": "Cadence Design Systems",
+      "role": "Software Engineer Intern - Allegro R&D Team",
+      "duration": "June 2025 - Aug 2025",
+      "details": "Developed data acquisition pipelines and backend infrastructure using Python and Flask for scalable ML workflows. Optimized ML models achieving 91% accuracy."
+    },
+    {
+      "company": "National Institute of Ocean Technology (NIOT)",
+      "role": "Research Intern",
+      "duration": "July 2024 - Sept 2024",
+      "details": "Processed and analyzed 18 TB of deep-sea metagenomic data. Uncovered novel microbial genes for industrial biotechnology applications."
+    }
+  ],
+  "skills": {
+    "languages": ["C++", "Python", "JavaScript", "TypeScript", "HTML", "SQL", "R", "Julia", "Tcl"],
+    "frameworks": ["Django", "Flask", "Node.js", "React.js", "PyTorch", "TensorFlow", "Scikit-learn", "OpenCV"],
+    "tools": ["Git", "Perforce", "AWS", "Docker", "Hugging Face", "Jupyter Notebook", "PyCharm", "VS Professional", "Jira", "RHEL"],
+    "domains": ["Machine Learning", "Deep Learning", "NLP", "Computer Vision", "Reinforcement Learning", "RAG", "Data Analytics"]
+  },
+  "achievements": [
+    "Presented BLINC at Cadence India Hackathon 2025 (decentralized log analysis system using federated learning).",
+    "Research Publication (FABRIC) under review at Journal of Network and Systems Management, Springer.",
+    "Sports Society President at Sai University (2022-2023)."
+  ]
+}

@@ -5,7 +5,7 @@ import { Children, cloneElement, useEffect, useMemo, useRef, useState } from 're
 
 import './Dock.css';
 
-function DockItem({ children, className = '', onClick, mouseX, spring, distance, magnification, baseItemSize }: {
+function DockItem({ children, className = '', onClick, mouseX, spring, distance, magnification, baseItemSize, isActive }: {
   children: React.ReactNode;
   className?: string;
   onClick?: () => void;
@@ -14,6 +14,7 @@ function DockItem({ children, className = '', onClick, mouseX, spring, distance,
   distance: number;
   magnification: number;
   baseItemSize: number;
+  isActive?: boolean;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const isHovered = useMotionValue(0);
@@ -41,7 +42,7 @@ function DockItem({ children, className = '', onClick, mouseX, spring, distance,
       onFocus={() => isHovered.set(1)}
       onBlur={() => isHovered.set(0)}
       onClick={onClick}
-      className={`dock-item ${className}`}
+      className={`dock-item ${isActive ? 'dock-active' : ''} ${className}`}
       tabIndex={0}
       role="button"
       aria-haspopup="true"
@@ -67,13 +68,12 @@ function DockLabel({ children, className = '', ...rest }: { children: React.Reac
     <AnimatePresence>
       {isVisible && (
         <motion.div
-          initial={{ opacity: 0, y: 0 }}
-          animate={{ opacity: 1, y: -10 }}
-          exit={{ opacity: 0, y: 0 }}
-          transition={{ duration: 0.2 }}
+          initial={{ opacity: 0, x: -8 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -8 }}
+          transition={{ duration: 0.15 }}
           className={`dock-label ${className}`}
           role="tooltip"
-          style={{ x: '-50%' }}
         >
           {children}
         </motion.div>
@@ -91,6 +91,8 @@ export interface DockItemData {
   label: string;
   onClick?: () => void;
   className?: string;
+  href?: string;
+  isActive?: boolean;
 }
 
 export default function Dock({
@@ -101,7 +103,8 @@ export default function Dock({
   distance = 200,
   panelHeight = 68,
   dockHeight = 256,
-  baseItemSize = 50
+  baseItemSize = 50,
+  separatorAfter
 }: {
   items: DockItemData[];
   className?: string;
@@ -111,6 +114,7 @@ export default function Dock({
   panelHeight?: number;
   dockHeight?: number;
   baseItemSize?: number;
+  separatorAfter?: number;
 }) {
   const mouseX = useMotionValue(Infinity);
   const isHovered = useMotionValue(0);
@@ -131,19 +135,24 @@ export default function Dock({
         aria-label="Application dock"
       >
         {items.map((item, index) => (
-          <DockItem
-            key={index}
-            onClick={item.onClick}
-            className={item.className}
-            mouseX={mouseX}
-            spring={spring}
-            distance={distance}
-            magnification={magnification}
-            baseItemSize={baseItemSize}
-          >
-            <DockIcon>{item.icon}</DockIcon>
-            <DockLabel>{item.label}</DockLabel>
-          </DockItem>
+          <div key={index}>
+            <DockItem
+              onClick={item.onClick}
+              className={item.className}
+              mouseX={mouseX}
+              spring={spring}
+              distance={distance}
+              magnification={magnification}
+              baseItemSize={baseItemSize}
+              isActive={item.isActive}
+            >
+              <DockIcon>{item.icon}</DockIcon>
+              <DockLabel>{item.label}</DockLabel>
+            </DockItem>
+            {separatorAfter !== undefined && index === separatorAfter && (
+              <div className="dock-separator" />
+            )}
+          </div>
         ))}
       </motion.div>
     </div>

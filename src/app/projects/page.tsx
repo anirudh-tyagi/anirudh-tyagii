@@ -1,6 +1,8 @@
 'use client';
 
+import { motion } from 'motion/react';
 import DockNav from '@/components/DockNav';
+import PageTransition from '@/components/PageTransition';
 import '../terminal.css';
 
 export default function ProjectsPage() {
@@ -51,72 +53,97 @@ export default function ProjectsPage() {
   ];
 
   return (
-    <main className="dark-container">
+    <PageTransition>
+      <main className="dark-container" style={{ justifyContent: 'flex-start', overflowY: 'auto' }}>
 
-      {/* Page Title */}
-      <div className="page-header">
-        <h1 className="page-title">Projects</h1>
-      </div>
+        {/* Page Title */}
+        <div className="page-header">
+          <motion.h1
+            className="page-title"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            Projects
+          </motion.h1>
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2, duration: 0.5 }}
+            style={{ color: '#555', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.9rem', marginTop: '0.5rem' }}
+          >
+            Things I&apos;ve built and experimented with.
+          </motion.p>
+        </div>
 
-      {/* Projects Grid */}
-      <div className="projects-grid">
-        {projects.map((project, index) => {
-          // Explicit typing for demo property which might not exist on all items in array yet if not typed
-          const p = project as any;
-          const demoLink = p.demo;
-          const codeLink = p.link;
+        {/* Projects Grid */}
+        <div className="projects-grid">
+          {projects.map((project, index) => {
+            const p = project as typeof project & { demo?: string };
+            const demoLink = p.demo;
+            const codeLink = p.link;
 
-          return (
-            <div key={index} className="project-card">
-              <a
-                href={demoLink || codeLink}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="project-image-link"
-                style={{ display: 'block' }}
+            return (
+              <motion.div
+                key={index}
+                className="project-card"
+                initial={{ opacity: 0, y: 40 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{
+                  delay: 0.1 + index * 0.1,
+                  duration: 0.5,
+                  ease: [0.25, 0.46, 0.45, 0.94],
+                }}
+                whileHover={{ y: -6, transition: { duration: 0.25 } }}
               >
-                {project.image && (
-                  <div
-                    className="project-image"
-                    style={{ backgroundImage: `url(${project.image})` }}
-                  />
-                )}
-              </a>
-
-              <div className="project-content">
                 <a
-                  href={codeLink}
+                  href={demoLink || codeLink}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="project-title-link"
+                  className="project-image-link"
+                  style={{ display: 'block', overflow: 'hidden' }}
                 >
-                  <h3 className="project-title">{project.title}</h3>
-                </a>
-                <p className="project-description">{project.description}</p>
-                <div className="project-tech">
-                  {project.tech.map((tech, i) => (
-                    <span key={i} className="tech-tag">{tech}</span>
-                  ))}
-                </div>
-
-                <div className="project-links" style={{ marginTop: 'auto', display: 'flex', gap: '1rem' }}>
-                  <a href={codeLink} target="_blank" rel="noopener noreferrer" className="project-link-hint">
-                    View Code →
-                  </a>
-                  {demoLink && (
-                    <a href={demoLink} target="_blank" rel="noopener noreferrer" className="project-link-hint" style={{ color: '#fff' }}>
-                      Live Demo ↗
-                    </a>
+                  {project.image && (
+                    <div
+                      className="project-image"
+                      style={{ backgroundImage: `url(${project.image})` }}
+                    />
                   )}
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
+                </a>
 
-      {/* Dock Navigation */}
-      <DockNav />
-    </main>
+                <div className="project-content">
+                  <a
+                    href={codeLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="project-title-link"
+                  >
+                    <h3 className="project-title">{project.title}</h3>
+                  </a>
+                  <p className="project-description">{project.description}</p>
+                  <div className="project-tech">
+                    {project.tech.map((tech, i) => (
+                      <span key={i} className="tech-tag">{tech}</span>
+                    ))}
+                  </div>
+
+                  <div className="project-links" style={{ marginTop: 'auto', display: 'flex', gap: '1rem' }}>
+                    <a href={codeLink} target="_blank" rel="noopener noreferrer" className="project-link-hint">
+                      View Code →
+                    </a>
+                    {demoLink && (
+                      <a href={demoLink} target="_blank" rel="noopener noreferrer" className="project-link-hint" style={{ color: '#fff' }}>
+                        Live Demo ↗
+                      </a>
+                    )}
+                  </div>
+                </div>
+              </motion.div>
+            );
+          })}
+        </div>
+
+      </main>
+    </PageTransition>
   );
 }

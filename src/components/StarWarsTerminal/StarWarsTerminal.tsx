@@ -44,16 +44,14 @@ export default function StarWarsTerminal() {
 
     // Load High Score on Mount
     useEffect(() => {
-        // Changed key to force reset from previous high scores
-        const saved = localStorage.getItem('sw-high-score-final-68');
-        let currentHigh = saved ? parseInt(saved, 10) : 68;
-
-        // Ensure it's saved immediately if it was null
-        if (!saved) {
-            localStorage.setItem('sw-high-score-final-68', '68');
-        }
-
-        setHighScore(currentHigh);
+        fetch('/api/score')
+            .then(res => res.json())
+            .then(data => {
+                if (data.highScore !== undefined) {
+                    setHighScore(data.highScore);
+                }
+            })
+            .catch(err => console.error("Error fetching high score:", err));
     }, []);
 
     useEffect(() => {
@@ -257,7 +255,11 @@ export default function StarWarsTerminal() {
                                 // Check High Score
                                 setHighScore(currentHigh => {
                                     if (newScore > currentHigh) {
-                                        localStorage.setItem('sw-high-score-final-68', newScore.toString());
+                                        fetch('/api/score', {
+                                            method: 'POST',
+                                            headers: { 'Content-Type': 'application/json' },
+                                            body: JSON.stringify({ newScore })
+                                        }).catch(err => console.error("Error saving high score:", err));
                                         return newScore;
                                     }
                                     return currentHigh;
@@ -372,19 +374,9 @@ export default function StarWarsTerminal() {
     return (
         <div className="star-wars-terminal">
             <div className="crt-overlay"></div>
-            <div style={{
-                position: 'absolute',
-                top: 20,
-                right: 20,
-                color: '#00ff00',
-                fontFamily: '"VT323", monospace',
-                fontSize: '24px',
-                zIndex: 10,
-                textShadow: '0 0 5px #00ff00',
-                textAlign: 'right'
-            }}>
+            <div className="sw-score-container">
                 <div>SCORE: {score.toString().padStart(6, '0')}</div>
-                <div style={{ fontSize: '18px', color: '#00cc00', marginTop: '0px' }}>
+                <div className="sw-score-top">
                     TOP SCORE: {highScore.toString().padStart(6, '0')}
                 </div>
             </div>

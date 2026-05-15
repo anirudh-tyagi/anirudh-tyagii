@@ -15,3 +15,32 @@
 .star-wars-terminal canvas {
     display: block;
 }
+
+.sw-score-container {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    color: #00ff00;
+    font-family: "VT323", monospace;
+    font-size: 24px;
+    z-index: 10;
+    text-shadow: 0 0 5px #00ff00;
+    text-align: right;
+}
+
+.sw-score-top {
+    font-size: 18px;
+    color: #00cc00;
+    margin-top: 0px;
+}
+
+@media (max-width: 480px) {
+    .sw-score-container {
+        top: 15px;
+        right: 15px;
+        font-size: 18px;
+    }
+    .sw-score-top {
+        font-size: 14px;
+    }
+}
