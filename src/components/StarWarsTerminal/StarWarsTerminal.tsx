@@ -116,7 +116,7 @@ export default function StarWarsTerminal() {
             // --- 1. Draw Stars ---
             ctx.fillStyle = '#ffffff';
             stars.forEach((star) => {
-                star.z -= 5;
+                star.z -= 2.5;
                 if (star.z <= 0) {
                     star.z = 2000;
                     star.x = (Math.random() - 0.5) * width * 2;
@@ -138,7 +138,7 @@ export default function StarWarsTerminal() {
             // --- 2. Draw Enemies (TIE Fighters) ---
             enemies.forEach((enemy) => {
                 if (!enemy.active) return;
-                enemy.z -= 8; // Faster speed
+                enemy.z -= 4; // Faster speed
 
                 if (enemy.z <= 10) {
                     // Passed player, respawn
@@ -212,7 +212,7 @@ export default function StarWarsTerminal() {
             ctx.lineWidth = 3;
             lasers.forEach((laser) => {
                 if (!laser.active) return;
-                laser.z += 60; // Very fast
+                laser.z += 30; // Very fast
 
                 const progress = laser.z / 1500;
                 if (progress > 1.2) {
