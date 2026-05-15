@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { generateProfessionalPrompt, generateMissMonsterPrompt } from '@/components/chatPrompts';
-import fs from 'fs';
-import path from 'path';
+import knowledgeData from '@/data/anirudh-knowledge.json';
 
 export async function POST(req: Request) {
   try {
@@ -17,9 +16,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
     }
 
-    // Read the knowledge context dynamically
-    const knowledgePath = path.join(process.cwd(), 'src/data/anirudh-knowledge.json');
-    const knowledgeContext = fs.readFileSync(knowledgePath, 'utf8');
+    // Convert the imported JSON object back to a string for the prompt generator
+    const knowledgeContext = JSON.stringify(knowledgeData, null, 2);
 
     // Determine which system prompt to use
     const systemPrompt = isMissMonster 

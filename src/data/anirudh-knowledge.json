@@ -1,44 +1,120 @@
 {
   "personal_info": {
     "name": "Anirudh Tyagi",
-    "role": "Machine Learning Engineer & Full-Stack Developer",
+    "title": "Software Developer | AI/ML Engineer",
     "education": {
       "university": "Sai University",
       "degree": "B.Tech in Computing and Data Science",
       "duration": "2022 - 2026",
-      "cgpa": "8.0"
+      "cgpa": "8.0/10"
     },
-    "hobbies": ["Coding", "Exploring Tech", "Photography", "Sports"]
+    "summary": "Passionate software developer with experience in systems programming, AI/ML, and scalable backend engineering. Skilled in building production-grade applications across C++, Qt, Python, and modern web technologies, with a strong focus on performance, usability, and real-world impact.",
+    "interests": [
+      "Systems Programming",
+      "Artificial Intelligence",
+      "Product Development",
+      "Photography",
+      "Sports",
+      "Exploring Emerging Technologies"
+    ]
   },
   "experience": [
     {
       "company": "Cadence Design Systems",
       "role": "Software Engineer Intern - Allegro R&D Team",
       "duration": "Jan 2026 - Present",
-      "details": "Developing production-grade features for Allegro System Capture (C++/Qt EDA application). Built a real-time schematic world-view widget and an expiry validation module."
+      "details": [
+        "Developing production-grade features for Allegro System Capture, a large-scale C++/Qt EDA application used in enterprise hardware design workflows.",
+        "Built a real-time schematic world-view widget with live viewport synchronization for enhanced navigation and usability.",
+        "Engineered an expiry validation module with robust state handling and improved workflow reliability.",
+        "Worked extensively with modern C++, STL, Qt framework, and large-scale software architecture."
+      ]
     },
     {
       "company": "Cadence Design Systems",
-      "role": "Software Engineer Intern - Allegro R&D Team",
-      "duration": "June 2025 - Aug 2025",
-      "details": "Developed data acquisition pipelines and backend infrastructure using Python and Flask for scalable ML workflows. Optimized ML models achieving 91% accuracy."
+      "role": "Software Engineer Intern - AI/ML Engineering",
+      "duration": "Jun 2025 - Aug 2025",
+      "details": [
+        "Developed scalable backend infrastructure and data acquisition pipelines using Python and Flask for machine learning workflows.",
+        "Optimized ML models achieving over 91% accuracy across internal evaluation benchmarks.",
+        "Contributed to automation and model deployment workflows, improving experimentation speed and reliability.",
+        "Collaborated across engineering teams to build data-driven AI solutions for production environments."
+      ]
     },
     {
       "company": "National Institute of Ocean Technology (NIOT)",
       "role": "Research Intern",
-      "duration": "July 2024 - Sept 2024",
-      "details": "Processed and analyzed 18 TB of deep-sea metagenomic data. Uncovered novel microbial genes for industrial biotechnology applications."
+      "duration": "Jul 2024 - Sept 2024",
+      "details": [
+        "Processed and analyzed over 18 TB of deep-sea metagenomic data for marine biotechnology research.",
+        "Identified novel microbial genes with potential industrial and environmental biotechnology applications.",
+        "Built data analysis workflows for handling large-scale biological datasets efficiently."
+      ]
     }
   ],
   "skills": {
-    "languages": ["C++", "Python", "JavaScript", "TypeScript", "HTML", "SQL", "R", "Julia", "Tcl"],
-    "frameworks": ["Django", "Flask", "Node.js", "React.js", "PyTorch", "TensorFlow", "Scikit-learn", "OpenCV"],
-    "tools": ["Git", "Perforce", "AWS", "Docker", "Hugging Face", "Jupyter Notebook", "PyCharm", "VS Professional", "Jira", "RHEL"],
-    "domains": ["Machine Learning", "Deep Learning", "NLP", "Computer Vision", "Reinforcement Learning", "RAG", "Data Analytics"]
+    "programming_languages": [
+      "C++",
+      "Python",
+      "JavaScript",
+      "TypeScript",
+      "SQL",
+      "R",
+      "Julia",
+      "Tcl",
+      "HTML/CSS"
+    ],
+    "frameworks_and_libraries": [
+      "Qt",
+      "React.js",
+      "Node.js",
+      "Flask",
+      "Django",
+      "PyTorch",
+      "TensorFlow",
+      "Scikit-learn",
+      "OpenCV"
+    ],
+    "tools_and_platforms": [
+      "Git",
+      "Perforce",
+      "Docker",
+      "AWS",
+      "Hugging Face",
+      "Jupyter Notebook",
+      "PyCharm",
+      "Visual Studio",
+      "Jira",
+      "RHEL/Linux"
+    ],
+    "domains": [
+      "Software Engineering",
+      "Machine Learning",
+      "Deep Learning",
+      "Natural Language Processing",
+      "Computer Vision",
+      "Reinforcement Learning",
+      "Retrieval-Augmented Generation (RAG)",
+      "Backend Development",
+      "Data Analytics"
+    ]
   },
-  "achievements": [
-    "Presented BLINC at Cadence India Hackathon 2025 (decentralized log analysis system using federated learning).",
-    "Research Publication (FABRIC) under review at Journal of Network and Systems Management, Springer.",
-    "Sports Society President at Sai University (2022-2023)."
-  ]
+  "projects_and_research": [
+    {
+      "name": "BLINC",
+      "description": "Designed and presented a decentralized log analysis system leveraging federated learning at the Cadence India Hackathon 2025."
+    },
+    {
+      "name": "FABRIC Research Publication",
+      "description": "Co-authored a research paper currently under review at the Journal of Network and Systems Management (Springer)."
+    }
+  ],
+  "leadership_and_achievements": [
+    "Sports Society President at Sai University (2022 - 2023).",
+    "Mentored and taught swimming and life-saving skills to 100+ students during university summer programs.",
+    "Presented innovative AI/ML solutions at internal hackathons and research forums."
+  ],
+  "links": {
+    "portfolio": "https://anirudhtyagi.vercel.app/"
+  }
 }
