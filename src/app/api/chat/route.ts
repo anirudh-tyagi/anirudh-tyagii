@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server';
-import { generateProfessionalPrompt, generateMissMonsterPrompt } from '@/components/chatPrompts';
+import { generateProfessionalPrompt } from '@/components/chatPrompts';
 import knowledgeData from '@/data/anirudh-knowledge.json';
 
 export async function POST(req: Request) {
   try {
-    const { messages, isMissMonster } = await req.json();
+    const { messages } = await req.json();
 
     if (!messages || !Array.isArray(messages)) {
       return NextResponse.json({ error: 'Invalid messages format' }, { status: 400 });
@@ -19,10 +19,8 @@ export async function POST(req: Request) {
     // Convert the imported JSON object back to a string for the prompt generator
     const knowledgeContext = JSON.stringify(knowledgeData, null, 2);
 
-    // Determine which system prompt to use
-    const systemPrompt = isMissMonster 
-      ? generateMissMonsterPrompt(knowledgeContext) 
-      : generateProfessionalPrompt(knowledgeContext);
+    // Use the professional system prompt
+    const systemPrompt = generateProfessionalPrompt(knowledgeContext);
 
     // Prepend the system prompt to the user's message history
     const payloadMessages = [

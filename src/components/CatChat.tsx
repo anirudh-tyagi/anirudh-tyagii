@@ -13,7 +13,6 @@ export default function CatChat() {
   const [query, setQuery] = useState('');
   const [response, setResponse] = useState('Meow! I am Meso. Ask me anything about Anirudh.');
   const [isLoading, setIsLoading] = useState(false);
-  const [isMissMonster, setIsMissMonster] = useState(false);
   const [chatHistory, setChatHistory] = useState<{role: string, content: string}[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -36,13 +35,6 @@ export default function CatChat() {
     setQuery('');
     setResponse('...thinking (purrrr)...');
     
-    // Check for the secret trigger
-    let currentIsMissMonster = isMissMonster;
-    if (userQuery.toLowerCase().includes('miss monster')) {
-      currentIsMissMonster = true;
-      setIsMissMonster(true);
-    }
-    
     const newMessage = { role: 'user', content: userQuery };
     const updatedHistory = [...chatHistory, newMessage];
 
@@ -53,8 +45,7 @@ export default function CatChat() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          messages: updatedHistory,
-          isMissMonster: currentIsMissMonster
+          messages: updatedHistory
         })
       });
       
