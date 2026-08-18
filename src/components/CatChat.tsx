@@ -6,7 +6,6 @@ import { motion, AnimatePresence } from 'motion/react';
 import './CatChat.css';
 
 const Lottie = dynamic(() => import('lottie-react'), { ssr: false });
-import catAnimation from '../../public/cat.json';
 
 export default function CatChat() {
   const [isOpen, setIsOpen] = useState(false);
@@ -14,7 +13,17 @@ export default function CatChat() {
   const [response, setResponse] = useState('Meow! I am Meso. Ask me anything about Anirudh.');
   const [isLoading, setIsLoading] = useState(false);
   const [chatHistory, setChatHistory] = useState<{role: string, content: string}[]>([]);
+  // Fetched at runtime instead of statically imported, so the ~480KB
+  // animation JSON ships as a cached static asset, not client JS.
+  const [catAnimation, setCatAnimation] = useState<object | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    fetch('/cat.json')
+      .then((res) => res.json())
+      .then(setCatAnimation)
+      .catch(() => {});
+  }, []);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -50,11 +59,15 @@ export default function CatChat() {
       });
       
       const data = await res.json();
-      
+
       if (res.ok && data.message) {
         const aiResponse = data.message;
         setResponse(aiResponse);
         setChatHistory([...updatedHistory, { role: 'assistant', content: aiResponse }]);
+      } else if (res.status === 429) {
+        setResponse(data.error || 'Meow, too many pets at once — give me a second 🐾');
+      } else if (res.status === 400 && data.error) {
+        setResponse(`Meow... ${data.error.toLowerCase()}`);
       } else {
         setResponse('Meow... I am confused right now.');
         console.error('Chat Error:', data.error);
@@ -84,13 +97,14 @@ export default function CatChat() {
             </div>
             
             <form onSubmit={handleSubmit} className="cat-chat-form">
-              <input 
-                type="text" 
+              <input
+                type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Ask me something..." 
+                placeholder="Ask me something..."
                 className="cat-chat-input"
                 disabled={isLoading}
+                maxLength={500}
               />
               <button type="submit" disabled={isLoading} className="cat-chat-submit" title="Send">
                 {isLoading ? '🐾' : '➤'}
@@ -108,7 +122,11 @@ export default function CatChat() {
         title="Chat with me!"
         style={{ cursor: 'pointer' }}
       >
-        <Lottie animationData={catAnimation} loop={true} style={{ width: 70, height: 70 }} />
+        {catAnimation ? (
+          <Lottie animationData={catAnimation} loop={true} style={{ width: 70, height: 70 }} />
+        ) : (
+          <span className="cat-chat-placeholder" aria-hidden="true">🐱</span>
+        )}
       </div>
     </div>
   );

@@ -40,18 +40,12 @@ interface Explosion {
 export default function StarWarsTerminal() {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [score, setScore] = useState(0);
-    const [highScore, setHighScore] = useState(68);
+    const [highScore, setHighScore] = useState(0);
 
-    // Load High Score on Mount
+    // Load High Score on Mount (per-browser, via localStorage)
     useEffect(() => {
-        fetch('/api/score')
-            .then(res => res.json())
-            .then(data => {
-                if (data.highScore !== undefined) {
-                    setHighScore(data.highScore);
-                }
-            })
-            .catch(err => console.error("Error fetching high score:", err));
+        const stored = window.localStorage.getItem('starWarsHighScore');
+        if (stored) setHighScore(parseInt(stored, 10) || 0);
     }, []);
 
     useEffect(() => {
@@ -255,11 +249,7 @@ export default function StarWarsTerminal() {
                                 // Check High Score
                                 setHighScore(currentHigh => {
                                     if (newScore > currentHigh) {
-                                        fetch('/api/score', {
-                                            method: 'POST',
-                                            headers: { 'Content-Type': 'application/json' },
-                                            body: JSON.stringify({ newScore })
-                                        }).catch(err => console.error("Error saving high score:", err));
+                                        window.localStorage.setItem('starWarsHighScore', String(newScore));
                                         return newScore;
                                     }
                                     return currentHigh;

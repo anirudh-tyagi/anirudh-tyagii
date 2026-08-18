@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import TextType from '@/components/TextType';
 import PageTransition from '@/components/PageTransition';
 import Link from 'next/link';
 import './terminal.css';
@@ -84,7 +83,7 @@ export default function Home() {
               <Link href="/about" className="cta-secondary">
                 <span>About Me</span>
               </Link>
-              <a href="/resume/Anirudh CAD.pdf" download className="cta-ghost">
+              <a href="/resume/Anirudh-Tyagi-Resume.pdf" download className="cta-ghost">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
                   <polyline points="7 10 12 15 17 10" />

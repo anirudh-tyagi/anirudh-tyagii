@@ -1,3 +1,36 @@
+/* ===== Design Tokens ===== */
+:root {
+  --bg: #0a0e14;
+  --surface: rgba(6, 0, 16, 0.7);
+  --border: #1a1a2e;
+  --accent: #00ff9f;
+  --accent-dim: rgba(0, 255, 159, 0.2);
+  --cyan: #00d4ff;
+  --purple: #a855f7;
+
+  --text: #e6e6e6;
+  --text-dim: #b0b0b0;
+  --text-mute: #888;
+  --text-faint: #666;
+
+  --font-mono: var(--font-jetbrains-mono), 'Fira Code', 'SF Mono', 'Cascadia Code', 'Consolas', 'Liberation Mono', monospace;
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+
+  --text-xs: 0.75rem;
+  --text-sm: 0.85rem;
+  --text-base: 0.95rem;
+  --text-lg: 1.1rem;
+  --text-xl: 1.5rem;
+
+  --ease-standard: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
 /* ===== CSS Reset & Base Styles ===== */
 *,
 *::before,
@@ -15,12 +48,23 @@ html {
 }
 
 body {
-  font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', 'Cascadia Code', 'Consolas', 'Liberation Mono', monospace;
-  background: #0a0e14;
-  color: #e6e6e6;
+  font-family: var(--font-mono);
+  background: var(--bg);
+  color: var(--text);
   line-height: 1.6;
   min-height: 100vh;
   overflow-x: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* ===== Selection Styles ===== */

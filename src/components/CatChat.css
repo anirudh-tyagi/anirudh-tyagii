@@ -126,6 +126,11 @@
     border-left: 7px solid transparent;
 }
 
+.cat-chat-placeholder {
+    font-size: 2rem;
+    line-height: 1;
+}
+
 @media (max-width: 480px) {
     .cat-chat-container {
         bottom: 15px;

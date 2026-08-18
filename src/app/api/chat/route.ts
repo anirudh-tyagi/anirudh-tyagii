@@ -1,13 +1,44 @@
 import { NextResponse } from 'next/server';
-import { generateProfessionalPrompt } from '@/components/chatPrompts';
-import knowledgeData from '@/data/anirudh-knowledge.json';
+import { SYSTEM_PROMPT } from '@/lib/chat/prompt';
+import { sanitizeMessages } from '@/lib/chat/sanitize';
+import { isOffTopic, OFF_TOPIC_REPLY } from '@/lib/chat/guard';
+import { isUnsafeOutput, FALLBACK_REPLY } from '@/lib/chat/filter';
+import { checkRateLimit, getClientIp } from '@/lib/chat/rateLimit';
+
+export const runtime = 'nodejs';
+
+const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
+const MODEL = process.env.GROQ_MODEL || 'llama-3.3-70b-versatile';
+const REQUEST_TIMEOUT_MS = 10_000;
 
 export async function POST(req: Request) {
   try {
-    const { messages } = await req.json();
+    if (req.headers.get('content-type')?.includes('application/json') !== true) {
+      return NextResponse.json({ error: 'Invalid content type' }, { status: 400 });
+    }
 
-    if (!messages || !Array.isArray(messages)) {
-      return NextResponse.json({ error: 'Invalid messages format' }, { status: 400 });
+    const ip = getClientIp(req);
+    const rateLimit = checkRateLimit(ip);
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { error: 'Meow, too many pets at once — give me a second 🐾' },
+        { status: 429, headers: { 'Retry-After': String(rateLimit.retryAfterSeconds ?? 60) } }
+      );
+    }
+
+    const body = await req.json().catch(() => null);
+    if (!body) {
+      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
+    }
+
+    const sanitized = sanitizeMessages(body.messages);
+    if (!sanitized.ok) {
+      return NextResponse.json({ error: sanitized.error }, { status: 400 });
+    }
+
+    const lastUserMessage = sanitized.messages[sanitized.messages.length - 1];
+    if (isOffTopic(lastUserMessage.content)) {
+      return NextResponse.json({ message: OFF_TOPIC_REPLY });
     }
 
     const apiKey = process.env.GROQ_API_KEY;
@@ -16,49 +47,55 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
     }
 
-    // Convert the imported JSON object back to a string for the prompt generator
-    const knowledgeContext = JSON.stringify(knowledgeData, null, 2);
+    const payloadMessages = [{ role: 'system', content: SYSTEM_PROMPT }, ...sanitized.messages];
 
-    // Use the professional system prompt
-    const systemPrompt = generateProfessionalPrompt(knowledgeContext);
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
 
-    // Prepend the system prompt to the user's message history
-    const payloadMessages = [
-      { role: 'system', content: systemPrompt },
-      ...messages
-    ];
-
-    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
-        messages: payloadMessages,
-        max_tokens: 150,
-        temperature: 0.7,
-      }),
-    });
+    let response: Response;
+    try {
+      response = await fetch(GROQ_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          model: MODEL,
+          messages: payloadMessages,
+          max_tokens: 150,
+          temperature: 0.4,
+        }),
+        signal: controller.signal,
+      });
+    } catch (err) {
+      console.error('Groq request failed:', err);
+      return NextResponse.json({ error: 'Failed to reach the chat service' }, { status: 502 });
+    } finally {
+      clearTimeout(timeout);
+    }
 
     if (!response.ok) {
-      const errorData = await response.text();
-      console.error('Groq API Error:', errorData);
-      return NextResponse.json({ error: 'Failed to communicate with Groq API' }, { status: response.status });
+      const errorData = await response.text().catch(() => '');
+      console.error('Groq API Error:', response.status, errorData);
+      return NextResponse.json({ error: 'Failed to communicate with the chat service' }, { status: 502 });
     }
 
     const data = await response.json();
-    
-    if (data.choices && data.choices.length > 0) {
-      return NextResponse.json({ message: data.choices[0].message.content });
-    } else {
-      return NextResponse.json({ error: 'No response from Groq API' }, { status: 500 });
+    const message: unknown = data?.choices?.[0]?.message?.content;
+
+    if (typeof message !== 'string' || !message.trim()) {
+      return NextResponse.json({ error: 'No response from the chat service' }, { status: 502 });
     }
 
+    if (isUnsafeOutput(message)) {
+      console.warn('Filtered unsafe chat output for IP', ip);
+      return NextResponse.json({ message: FALLBACK_REPLY });
+    }
+
+    return NextResponse.json({ message });
   } catch (error) {
     console.error('API Route Error:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
-
