@@ -21,4 +21,4 @@ export function isUnsafeOutput(text: string): boolean {
 }
 
 export const FALLBACK_REPLY =
-  "Meow... let's stick to talking about Anirudh! Ask me about his projects or experience. 🐾";
+  "let's stick to talking about Anirudh! Ask me about his projects or experience. 🐾";
