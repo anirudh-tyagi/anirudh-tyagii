@@ -8,7 +8,7 @@ import { checkRateLimit, getClientIp } from '@/lib/chat/rateLimit';
 export const runtime = 'nodejs';
 
 const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
-const MODEL = process.env.GROQ_MODEL || 'llama-3.3-70b-versatile';
+const MODEL = process.env.GROQ_MODEL || 'openai/gpt-oss-120b';
 const REQUEST_TIMEOUT_MS = 10_000;
 
 export async function POST(req: Request) {
@@ -63,6 +63,7 @@ export async function POST(req: Request) {
         body: JSON.stringify({
           model: MODEL,
           messages: payloadMessages,
+          reasoning_effort: 'low',
           max_tokens: 150,
           temperature: 0.4,
         }),
