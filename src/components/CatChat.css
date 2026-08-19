@@ -1,7 +1,9 @@
+/* Desktop: the dock is a vertical rail on the left, so the bottom-right
+   corner is free and is where people look for a chat affordance. */
 .cat-chat-container {
     position: fixed;
-    bottom: 30px;
-    right: 30px;
+    bottom: 28px;
+    right: 28px;
     z-index: 10000;
     display: flex;
     flex-direction: column;
@@ -10,23 +12,72 @@
 }
 
 .cat-chat-avatar {
+    position: relative;
     width: 70px;
     height: 70px;
     border-radius: 50%;
-    background: rgba(10, 15, 20, 0.6);
+    background: radial-gradient(circle at 50% 35%, rgba(0, 255, 159, 0.14), rgba(6, 10, 16, 0.85));
     backdrop-filter: blur(10px);
-    border: 1px solid rgba(0, 255, 159, 0.15);
+    border: 1px solid rgba(0, 255, 159, 0.3);
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 4px 20px rgba(0, 255, 159, 0.05);
-    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+    box-shadow: 0 6px 26px rgba(0, 0, 0, 0.45), 0 0 22px rgba(0, 255, 159, 0.12);
+    transition: transform 0.3s var(--ease-standard), box-shadow 0.3s var(--ease-standard), border-color 0.3s var(--ease-standard);
+    animation: cat-float 4.5s ease-in-out infinite;
+}
+
+/* A slow bob reads as alive without demanding attention. */
+@keyframes cat-float {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-6px); }
 }
 
 .cat-chat-avatar:hover {
-    transform: scale(1.05);
-    box-shadow: 0 8px 30px rgba(0, 255, 159, 0.15);
-    border-color: rgba(0, 255, 159, 0.4);
+    transform: translateY(-8px) scale(1.06);
+    border-color: var(--accent);
+    box-shadow: 0 12px 34px rgba(0, 0, 0, 0.5), 0 0 30px rgba(0, 255, 159, 0.3);
+    animation-play-state: paused;
+}
+
+/* Soft halo that breathes behind the cat. */
+.cat-chat-avatar::before {
+    content: '';
+    position: absolute;
+    inset: -7px;
+    border-radius: 50%;
+    border: 1px solid rgba(0, 255, 159, 0.18);
+    animation: cat-halo 3.2s ease-in-out infinite;
+    pointer-events: none;
+}
+
+@keyframes cat-halo {
+    0%, 100% { opacity: 0.5; transform: scale(1); }
+    50%      { opacity: 0;   transform: scale(1.18); }
+}
+
+/* "ask me" tag, shown only while the panel is closed. */
+.cat-chat-nudge {
+    position: absolute;
+    right: calc(100% + 10px);
+    top: 50%;
+    transform: translateY(-50%);
+    font-family: var(--font-mono);
+    font-size: 0.64rem;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+    background: rgba(6, 10, 16, 0.92);
+    border: 1px solid rgba(0, 255, 159, 0.3);
+    border-radius: 999px;
+    padding: 0.22rem 0.55rem;
+    white-space: nowrap;
+    pointer-events: none;
+    animation: cat-nudge 3s ease-in-out infinite;
+}
+
+@keyframes cat-nudge {
+    0%, 100% { opacity: 0.45; transform: translate(2px, -50%); }
+    50%      { opacity: 1;    transform: translate(0, -50%); }
 }
 
 .cat-chat-tooltip {
@@ -41,7 +92,7 @@
     color: #fff;
     border-radius: 12px;
     font-size: 0.85rem;
-    font-family: 'JetBrains Mono', monospace;
+    font-family: var(--font-mono);
     z-index: 20;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4), 0 0 20px rgba(0, 255, 159, 0.1);
     display: flex;
@@ -66,13 +117,57 @@
     border-bottom-right-radius: 12px;
 }
 
+.cat-chat-tilde { color: var(--text-faint); font-weight: 400; }
+
+.cat-chat-caret {
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    padding-left: 0.35rem;
+    user-select: none;
+}
+
+/* Paw-print typing indicator. */
+.cat-typing {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.cat-typing-paw {
+    font-size: 0.9rem;
+    animation: cat-paw 1.2s ease-in-out infinite;
+}
+
+@keyframes cat-paw {
+    0%, 100% { transform: rotate(-8deg); }
+    50%      { transform: rotate(8deg); }
+}
+
+.cat-typing i {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--accent);
+    display: inline-block;
+    animation: cat-dot 1.1s ease-in-out infinite;
+}
+
+.cat-typing i:nth-child(3) { animation-delay: 0.15s; }
+.cat-typing i:nth-child(4) { animation-delay: 0.3s; }
+
+@keyframes cat-dot {
+    0%, 100% { opacity: 0.25; transform: translateY(0); }
+    50%      { opacity: 1;    transform: translateY(-3px); }
+}
+
 .cat-chat-input {
     flex: 1;
     background: transparent;
     border: none;
     outline: none;
     color: #00ff9f;
-    font-family: 'JetBrains Mono', monospace;
+    font-family: var(--font-mono);
     font-size: 0.85rem;
     padding: 0.25rem 0.5rem;
 }
@@ -126,25 +221,119 @@
     border-left: 7px solid transparent;
 }
 
-.cat-chat-placeholder {
-    font-size: 2rem;
-    line-height: 1;
+/* Until the animation lands the circle is empty, so the ring and glow
+   have to carry the affordance on their own. */
+.cat-chat-avatar:empty::after,
+.cat-chat-avatar:empty::after,
+.cat-chat-avatar:has(> .cat-chat-nudge:only-child)::after {
+    content: '';
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 1px solid rgba(0, 255, 159, 0.3);
+    border-top-color: var(--accent);
+    animation: cat-load 0.9s linear infinite;
 }
 
-@media (max-width: 480px) {
+@keyframes cat-load {
+    to { transform: rotate(360deg); }
+}
+
+/* The dock sits bottom-centre on phones and overlaps the bottom-right
+   corner at 320-390px, so the cat lifts clear of it rather than sitting
+   on top of the nav. */
+@media (max-width: 768px) {
     .cat-chat-container {
-        bottom: 15px;
-        right: 15px;
+        bottom: 96px;
+        right: 14px;
     }
-    
+
     .cat-chat-avatar {
-        width: 60px;
-        height: 60px;
+        width: 56px;
+        height: 56px;
     }
-    
+
+    .cat-chat-avatar > div,
+    .cat-chat-avatar canvas,
+    .cat-chat-avatar svg {
+        width: 56px !important;
+        height: 56px !important;
+    }
+
     .cat-chat-tooltip {
-        width: 280px;
-        max-width: calc(100vw - 30px);
-        bottom: 75px;
+        width: 285px;
+        max-width: calc(100vw - 28px);
+        bottom: 70px;
     }
+
+    .cat-chat-content { max-height: 210px; }
+
+    /* The tag would sit under the thumb and clip the viewport edge. */
+    .cat-chat-nudge { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .cat-chat-avatar,
+    .cat-chat-avatar::before,
+    .cat-chat-nudge,
+    .cat-typing-paw,
+    .cat-typing i { animation: none; }
+}
+
+
+/* ===== Header (added so the auto-opening panel is clearly dismissible) ===== */
+.cat-chat-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.6rem 0.85rem;
+    border-bottom: 1px solid rgba(0, 255, 159, 0.18);
+}
+
+.cat-chat-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    color: var(--accent);
+}
+
+.cat-chat-live {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 8px var(--accent);
+    animation: cat-chat-pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes cat-chat-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.35; }
+}
+
+.cat-chat-close {
+    background: none;
+    border: none;
+    color: var(--text-faint);
+    font-size: 1.15rem;
+    line-height: 1;
+    padding: 0 0.15rem;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: color 0.2s var(--ease-standard), background 0.2s var(--ease-standard);
+}
+
+.cat-chat-close:hover,
+.cat-chat-close:focus-visible {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .cat-chat-live { animation: none; }
 }

@@ -1,6 +1,7 @@
 'use client';
 
 import { motion, useMotionValue, useSpring, useTransform, AnimatePresence } from 'motion/react';
+import type { MotionValue, SpringOptions } from 'motion/react';
 import { Children, cloneElement, useEffect, useMemo, useRef, useState } from 'react';
 
 import './Dock.css';
@@ -9,8 +10,8 @@ function DockItem({ children, className = '', onClick, mouseX, spring, distance,
   children: React.ReactNode;
   className?: string;
   onClick?: () => void;
-  mouseX: any;
-  spring: any;
+  mouseX: MotionValue<number>;
+  spring: SpringOptions;
   distance: number;
   magnification: number;
   baseItemSize: number;
@@ -47,12 +48,12 @@ function DockItem({ children, className = '', onClick, mouseX, spring, distance,
       role="button"
       aria-haspopup="true"
     >
-      {Children.map(children, child => cloneElement(child as React.ReactElement<any>, { isHovered }))}
+      {Children.map(children, child => cloneElement(child as React.ReactElement<{ isHovered?: MotionValue<number> }>, { isHovered }))}
     </motion.div>
   );
 }
 
-function DockLabel({ children, className = '', ...rest }: { children: React.ReactNode; className?: string; isHovered?: any }) {
+function DockLabel({ children, className = '', ...rest }: { children: React.ReactNode; className?: string; isHovered?: MotionValue<number> }) {
   const { isHovered } = rest;
   const [isVisible, setIsVisible] = useState(false);
 
@@ -108,7 +109,7 @@ export default function Dock({
 }: {
   items: DockItemData[];
   className?: string;
-  spring?: { mass: number; stiffness: number; damping: number };
+  spring?: SpringOptions;
   magnification?: number;
   distance?: number;
   panelHeight?: number;
@@ -149,6 +150,9 @@ export default function Dock({
               <DockIcon>{item.icon}</DockIcon>
               <DockLabel>{item.label}</DockLabel>
             </DockItem>
+            {/* Touch devices never fire hover, so the tooltip above can
+                never appear there. This caption is shown instead. */}
+            <span className="dock-caption" aria-hidden="true">{item.label}</span>
             {separatorAfter !== undefined && index === separatorAfter && (
               <div className="dock-separator" />
             )}

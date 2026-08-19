@@ -35,12 +35,11 @@ export const personalInfo = {
   title: 'Software Developer | AI/ML Engineer',
   email: 'anirudhtyagi188@gmail.com',
   summary:
-    'Software developer with experience in systems programming, AI/ML, and scalable backend engineering. Builds production-grade applications across C++, Qt, Python, and modern web technologies, with a focus on performance, usability, and real-world impact.',
+    "I'm a software developer working mainly in systems: C++, Qt, and the kind of code that has to be right rather than clever. Alongside that I spend a lot of time in machine learning and distributed systems, which is where most of my research has ended up. What I care about is the part that's hard to fake — software that holds up under load, behaves sensibly at the edges, and still makes sense to whoever opens it six months later.",
   interests: [
     'Systems Programming',
     'Artificial Intelligence',
     'Product Development',
-    'Photography',
     'Sports',
   ],
 };

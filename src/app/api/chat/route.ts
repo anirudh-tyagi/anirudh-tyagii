@@ -1,7 +1,10 @@
 import { NextResponse } from 'next/server';
 import { SYSTEM_PROMPT } from '@/lib/chat/prompt';
 import { sanitizeMessages } from '@/lib/chat/sanitize';
-import { isOffTopic, OFF_TOPIC_REPLY } from '@/lib/chat/guard';
+import {
+  isOffTopic, isSuspicious, isHostile,
+  OFF_TOPIC_REPLY, suspiciousReply, hostileReply,
+} from '@/lib/chat/guard';
 import { isUnsafeOutput, FALLBACK_REPLY } from '@/lib/chat/filter';
 import { checkRateLimit, getClientIp } from '@/lib/chat/rateLimit';
 
@@ -21,7 +24,7 @@ export async function POST(req: Request) {
     const rateLimit = checkRateLimit(ip);
     if (!rateLimit.allowed) {
       return NextResponse.json(
-        { error: 'Meow, too many pets at once — give me a second 🐾' },
+        { error: 'Meow, too many pets at once. Give me a second 🐾' },
         { status: 429, headers: { 'Retry-After': String(rateLimit.retryAfterSeconds ?? 60) } }
       );
     }
@@ -36,7 +39,15 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: sanitized.error }, { status: 400 });
     }
 
+    // Three tiers, meanest first. All of them skip the Groq call entirely,
+    // so rudeness and jailbreak attempts cost nothing to answer.
     const lastUserMessage = sanitized.messages[sanitized.messages.length - 1];
+    if (isHostile(lastUserMessage.content)) {
+      return NextResponse.json({ message: hostileReply() });
+    }
+    if (isSuspicious(lastUserMessage.content)) {
+      return NextResponse.json({ message: suspiciousReply() });
+    }
     if (isOffTopic(lastUserMessage.content)) {
       return NextResponse.json({ message: OFF_TOPIC_REPLY });
     }

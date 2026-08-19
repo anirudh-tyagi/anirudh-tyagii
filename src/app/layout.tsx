@@ -23,6 +23,7 @@ export const metadata: Metadata = {
 import Background from "@/components/Background";
 import DockNav from "@/components/DockNav";
 import CatChat from "@/components/CatChat";
+import SmoothScroll from "@/components/SmoothScroll/SmoothScroll";
 
 export default function RootLayout({
   children,
@@ -32,6 +33,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={jetbrainsMono.variable}>
+        <a href="#home" className="skip-link">Skip to content</a>
+        <SmoothScroll />
         <Background />
         <DockNav />
         <CatChat />
