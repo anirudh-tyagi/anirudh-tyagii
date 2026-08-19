@@ -31,4 +31,4 @@ export function isOffTopic(content: string): boolean {
 }
 
 export const OFF_TOPIC_REPLY =
-  "Meow — I only talk about Anirudh's work and background, not code or homework. Try asking about a project or his experience! 🐾";
+  "I only talk about Anirudh's work and background, not code or homework. Try asking about a project or his experience! 🐾";
