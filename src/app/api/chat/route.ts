@@ -3,7 +3,7 @@ import { SYSTEM_PROMPT } from '@/lib/chat/prompt';
 import { sanitizeMessages } from '@/lib/chat/sanitize';
 import {
   isOffTopic, isSuspicious, isHostile,
-  OFF_TOPIC_REPLY, suspiciousReply, hostileReply,
+  OFF_TOPIC_REPLY, suspiciousReply, hostileReply, busyReply,
 } from '@/lib/chat/guard';
 import { isUnsafeOutput, FALLBACK_REPLY } from '@/lib/chat/filter';
 import { checkRateLimit, getClientIp } from '@/lib/chat/rateLimit';
@@ -90,6 +90,13 @@ export async function POST(req: Request) {
     if (!response.ok) {
       const errorData = await response.text().catch(() => '');
       console.error('Groq API Error:', response.status, errorData);
+
+      // Being rate limited is expected on the free tier, not a fault. Answer
+      // in voice with a 200 so the UI shows the cat rather than an error.
+      if (response.status === 429) {
+        return NextResponse.json({ message: busyReply() });
+      }
+
       return NextResponse.json({ error: 'Failed to communicate with the chat service' }, { status: 502 });
     }
 

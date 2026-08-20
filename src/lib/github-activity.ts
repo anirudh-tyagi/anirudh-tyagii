@@ -29,6 +29,14 @@ export interface ContributionCalendar {
   longestStreak: number;
   busiestDay: ContributionDay | null;
   source: 'graphql' | 'proxy';
+  /**
+   * Whether private contributions are actually part of these numbers.
+   * Being on the GraphQL path is not enough to claim it: that only happens
+   * when the token carries read:user AND "Include private contributions on
+   * my profile" is enabled. GitHub reports the private tally separately, so
+   * a non-zero count is the only honest evidence.
+   */
+  includesPrivate: boolean;
 }
 
 export interface ActiveRepo {
@@ -99,7 +107,8 @@ function computeStreaks(days: ContributionDay[]): { current: number; longest: nu
 function finalize(
   raw: { date: string; count: number }[],
   total: number,
-  source: ContributionCalendar['source']
+  source: ContributionCalendar['source'],
+  includesPrivate = false
 ): ContributionCalendar {
   const max = raw.reduce((m, d) => (d.count > m ? d.count : m), 0);
   const days: ContributionDay[] = raw.map((d) => ({
@@ -113,7 +122,9 @@ function finalize(
     null
   );
 
-  return { days, total, currentStreak: current, longestStreak: longest, busiestDay, source };
+  return {
+    days, total, currentStreak: current, longestStreak: longest, busiestDay, source, includesPrivate,
+  };
 }
 
 async function fromGraphQL(): Promise<ContributionCalendar | null> {
@@ -129,6 +140,7 @@ async function fromGraphQL(): Promise<ContributionCalendar | null> {
     query($login: String!, $from: DateTime!, $to: DateTime!) {
       user(login: $login) {
         contributionsCollection(from: $from, to: $to) {
+          restrictedContributionsCount
           contributionCalendar {
             totalContributions
             weeks { contributionDays { date contributionCount } }
@@ -151,7 +163,8 @@ async function fromGraphQL(): Promise<ContributionCalendar | null> {
     if (!res.ok) return null;
 
     const json = await res.json();
-    const cal = json?.data?.user?.contributionsCollection?.contributionCalendar;
+    const collection = json?.data?.user?.contributionsCollection;
+    const cal = collection?.contributionCalendar;
     if (!cal?.weeks) return null;
 
     const raw = cal.weeks.flatMap(
@@ -160,7 +173,8 @@ async function fromGraphQL(): Promise<ContributionCalendar | null> {
     );
     if (raw.length === 0) return null;
 
-    return finalize(raw, cal.totalContributions ?? 0, 'graphql');
+    const restricted: number = collection?.restrictedContributionsCount ?? 0;
+    return finalize(raw, cal.totalContributions ?? 0, 'graphql', restricted > 0);
   } catch {
     return null;
   }

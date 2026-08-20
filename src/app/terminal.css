@@ -155,8 +155,13 @@
     perspective: 1100px;
     perspective-origin: center;
     /* The wrapper must occupy exactly the box the panel used to, or every
-       grid and flex parent it sits in silently changes shape. */
+       grid and flex parent it sits in silently changes shape.
+       width:100% is load-bearing: .page-section is a column flex container
+       with align-items:center, so a flex item with no width shrinks to fit
+       its content. Without this the About panels stopped reaching their
+       max-width and collapsed inward. */
     display: block;
+    width: 100%;
     height: 100%;
     min-width: 0;
 }
@@ -180,24 +185,14 @@
     transition: none;
 }
 
-/* Depth *inside* a panel: the blueprint grid sits behind the content, so it
-   slides against the text as the panel turns. preserve-3d only survives
-   while every ancestor keeps overflow visible, which is why the project
-   card — it clips its image — tilts as a flat slab instead. */
+/* Panels keep a 3D context so they tilt as solid objects rather than being
+   flattened by the browser. */
 .about-intro,
 .about-stacks,
 .cv-card,
 .now-inner,
 .gh-panel {
     transform-style: preserve-3d;
-}
-
-.about-intro::before,
-.about-stacks::before,
-.cv-card::before,
-.now-inner::before,
-.gh-panel::before {
-    transform: translateZ(-18px);
 }
 
 .parallax {
@@ -223,11 +218,11 @@
     .parallax { transform: none !important; }
 }
 
-/* ===== Blueprint grid =====
-   A faint graph-paper texture laid over a panel. Drawn with two 1px
-   gradients rather than an image so it stays crisp at any DPR and costs
-   nothing to load. Masked to fade out downward, so it reads as a surface
-   the content sits on instead of a pattern printed over the text. */
+/* ===== Panel hover =====
+   One treatment for every box on the page: the border picks up the accent
+   and a soft glow lifts it off the starfield. Deliberately the only thing
+   that changes — an earlier version also faded in a graph-paper texture,
+   which turned out to be noise competing with the content. */
 .project-card,
 .now-inner,
 .about-intro,
@@ -235,80 +230,19 @@
 .cv-card,
 .gh-panel {
     position: relative;
-}
-
-.project-card::before,
-.now-inner::before,
-.about-intro::before,
-.about-stacks::before,
-.cv-card::before,
-.gh-panel::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    pointer-events: none;
-    background-image:
-        linear-gradient(rgba(0, 255, 159, 0.13) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0, 255, 159, 0.13) 1px, transparent 1px);
-    background-size: 26px 26px;
-    -webkit-mask-image: linear-gradient(180deg, #000 0%, rgba(0, 0, 0, 0.35) 55%, transparent 100%);
-    mask-image: linear-gradient(180deg, #000 0%, rgba(0, 0, 0, 0.35) 55%, transparent 100%);
-    transition: opacity 0.45s var(--ease-standard);
-}
-
-/* Panels: hidden until hover, so the grid is a reward for pointing at one
-   rather than a dozen competing textures on the page at rest. */
-.project-card::before,
-.about-intro::before,
-.about-stacks::before,
-.cv-card::before,
-.gh-panel::before { opacity: 0; }
-
-.project-card:hover::before,
-.about-intro:hover::before,
-.about-stacks:hover::before,
-.cv-card:hover::before,
-.gh-panel:hover::before { opacity: 1; }
-
-/* Matching border lift on the large panels. No translate on these — a
-   full-width CV card sliding up reads as a glitch, where a small card
-   reads as a lift. */
-.about-intro,
-.about-stacks {
     transition: border-color 0.35s var(--ease-standard),
                 box-shadow 0.35s var(--ease-standard);
 }
 
+.now-inner:hover,
 .about-intro:hover,
 .about-stacks:hover,
-.cv-card:hover {
+.cv-card:hover,
+.gh-panel:hover {
     border-color: rgba(0, 255, 159, 0.55);
     box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45), 0 0 26px rgba(0, 255, 159, 0.05);
 }
 
-/* The live band wears it permanently, at half strength. */
-.now-inner::before { opacity: 0.45; }
-
-/* Content has to be positioned to paint above an absolutely positioned
-   pseudo-element. */
-.project-content,
-.project-image-link,
-.now-inner > *,
-.about-intro > *,
-.about-stacks > *,
-.cv-card > * {
-    position: relative;
-    z-index: 1;
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .project-card::before,
-    .now-inner::before,
-    .about-intro::before,
-    .about-stacks::before,
-    .cv-card::before { transition: none; }
-}
 
 /* ===== Projects ===== */
 .projects-grid {
@@ -1098,15 +1032,27 @@
     display: grid;
     grid-template-columns: 200px 1fr;
     gap: var(--space-8);
-    align-items: center;
+    /* Top-aligned, not centred: the text column is far taller than the
+       portrait, so centring left the photo floating in dead space with the
+       name starting well below it. */
+    align-items: start;
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 18px;
 }
 
+/* One measure for the whole column, so the name, role, summary, chips and
+   button all share a right edge. Capping only the summary left everything
+   else running past it and the block read as ragged. */
+.about-intro-body {
+    max-width: 62ch;
+}
+
 .about-portrait {
     width: 200px;
-    height: 200px;
+    /* A 584x737 photo forced into a square crops the frame oddly; keeping
+       the portrait ratio matches the source. */
+    aspect-ratio: 4 / 5;
     border-radius: 16px;
     overflow: hidden;
     border: 1px solid rgba(0, 255, 159, 0.22);
@@ -1141,7 +1087,6 @@
     line-height: 1.75;
     color: var(--text-dim);
     margin-top: var(--space-3);
-    max-width: 62ch;
 }
 
 .about-interests {
@@ -1390,7 +1335,7 @@
     width: 100%;
     max-width: var(--w-column);
     margin: var(--space-6) auto 0;
-    padding: var(--space-8) var(--space-6) var(--space-6);
+    padding: var(--space-6);
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 18px;
@@ -1460,6 +1405,15 @@
     gap: 2px;
     margin: var(--space-6) 0 0;
     padding: 0;
+}
+
+/* Fixed three across on desktop. auto-fill resolved to five columns at this
+   width, so a six-language legend put five on one row and orphaned the
+   sixth on the next. */
+@media (min-width: 760px) {
+    .about-stacks-legend {
+        grid-template-columns: repeat(3, 1fr);
+    }
 }
 
 .about-stacks-legend li {

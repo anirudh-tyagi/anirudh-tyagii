@@ -16,7 +16,7 @@ export default function CatChat() {
   const [showNudge, setShowNudge] = useState(false);
   const [tapWord, setTapWord] = useState('tap');
   const [query, setQuery] = useState('');
-  const [response, setResponse] = useState('Meso. I live here. I was not consulted about it. Ask me something about Anirudh.');
+  const [response, setResponse] = useState("Meso. I live here. I was not consulted about it. Ask me about Anirudh, or don't. I'm not busy.");
   const [isLoading, setIsLoading] = useState(false);
   const [chatHistory, setChatHistory] = useState<{role: string, content: string}[]>([]);
   // Fetched at runtime instead of statically imported, so the ~480KB
@@ -61,8 +61,13 @@ export default function CatChat() {
     return () => window.clearTimeout(t);
   }, []);
 
+  // Scrolls the reply pane itself rather than calling scrollIntoView.
+  // scrollIntoView walks up every scrollable ancestor including the
+  // document, so when the panel auto-opened it could drag the whole page
+  // down with it. Setting scrollTop on the pane cannot move the page.
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    const pane = messagesEndRef.current?.parentElement;
+    if (pane) pane.scrollTop = pane.scrollHeight;
   };
 
   useEffect(() => {

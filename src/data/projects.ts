@@ -83,72 +83,6 @@ export const curatedProjects: CuratedProject[] = [
     order: 5,
   },
   {
-    repo: 'lms',
-    title: 'Loan Management System',
-    blurb:
-      'Full-stack lending platform with a borrower portal and an operations dashboard for loan lifecycle management.',
-    tech: ['Next.js', 'Express', 'MongoDB', 'JWT'],
-    demo: 'https://lms-frontend-weld-phi.vercel.app',
-    why:
-      "Half-built CRUD apps teach you nothing, so I did the whole lending flow: borrower side, operations side, the messy middle.",
-    order: 6,
-  },
-  {
-    repo: 'smart-home-ml-rl',
-    title: 'Smart Home Energy AI',
-    blurb:
-      'Reinforcement-learning energy optimization system integrating 3 supervised ML models in a Gymnasium environment: 26.4% simulated energy reduction, 98% comfort rating, 97.8% occupancy-prediction accuracy.',
-    tech: ['Python', 'PyTorch', 'Reinforcement Learning', 'Flask'],
-    image: '/projects/smart-home.png',
-    why:
-      "I wanted to know whether an RL agent could cut energy use without making the house unpleasant to live in.",
-    order: 7,
-  },
-  {
-    repo: 'LoRA-Fine-Tuning-for-LLM-Models',
-    title: 'LoRA Fine-Tuning',
-    blurb:
-      'Low-Rank Adaptation applied to a pre-trained LLM: injects small trainable matrices instead of retraining the full network, with side-by-side base and fine-tuned outputs so the behaviour change is visible rather than asserted.',
-    tech: ['Python', 'PyTorch', 'Transformers', 'LoRA'],
-    why:
-      "Full fine-tuning was never going to fit on hardware I own, so I wanted to see how much you actually give up by training a fraction of the weights.",
-    order: 8,
-  },
-  {
-    repo: 'cyber-cipher',
-    title: 'CyberCipher',
-    blurb:
-      'Cryptographic analysis suite: quantum-safe key generation, RC4/ChaCha20 stream ciphers, Shannon-entropy vulnerability detection, and interactive frequency/entropy visualizations.',
-    tech: ['Next.js', 'TypeScript', 'Cryptography'],
-    image: '/projects/cyber-cipher.png',
-    demo: 'https://cyber-cypher.vercel.app/',
-    why:
-      "Built while learning stream ciphers. Entropy is much easier to understand once you can watch it move.",
-    order: 9,
-  },
-  {
-    repo: 'FTIR-dashborad',
-    title: 'FTIR Dashboard',
-    blurb:
-      'FTIR spectroscopy analysis platform: automated peak detection, functional-group annotation, and polymer identification against known spectral signatures.',
-    tech: ['Next.js', 'FastAPI', 'Python', 'Plotly'],
-    image: '/projects/ftir.png',
-    why:
-      "A real lab problem that deserved better than a spreadsheet.",
-    order: 10,
-  },
-  {
-    repo: 'credit-management-backend',
-    title: 'Credit Approval System',
-    blurb:
-      'Django REST Framework backend for customer registration, credit scoring, and loan eligibility, with Celery background tasks and Docker containerization.',
-    tech: ['Django', 'REST Framework', 'Celery', 'Docker'],
-    image: '/projects/credit.png',
-    why:
-      "I wanted to build the boring parts properly: scoring, background jobs, containers. The things that break in production.",
-    order: 11,
-  },
-  {
     repo: 'Kaleidoscope',
     title: 'Kaleidoscope',
     blurb:
@@ -157,6 +91,6 @@ export const curatedProjects: CuratedProject[] = [
     image: '/projects/kaleidoscope.gif',
     why:
       "No reason at all. It just looked cool.",
-    order: 12,
+    order: 6,
   },
 ];

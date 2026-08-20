@@ -32,6 +32,25 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        {/*
+          Runs before the document finishes loading, which is the whole
+          point. The browser restores the previous scroll position and
+          jumps to any URL fragment during load, well before React
+          hydrates, so doing this from an effect is always too late: the
+          page visibly lands mid-document and then gets yanked back up.
+          Disabling restoration and dropping the fragment here means the
+          jump never happens in the first place.
+        */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{
+if('scrollRestoration' in history){history.scrollRestoration='manual';}
+if(location.hash){history.replaceState(null,'',location.pathname+location.search);}
+}catch(e){}})();`,
+          }}
+        />
+      </head>
       <body className={jetbrainsMono.variable}>
         <a href="#home" className="skip-link">Skip to content</a>
         <SmoothScroll />

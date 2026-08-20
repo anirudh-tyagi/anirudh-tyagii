@@ -46,6 +46,9 @@ export default function DevTerminal() {
   const [histIndex, setHistIndex] = useState(-1);
 
   const inputRef = useRef<HTMLInputElement>(null);
+  // Set once the visitor runs a command, so the scroll nudge below can tell
+  // a real command apart from the initial mount.
+  const hasRunCommand = useRef(false);
 
   const commands = useMemo<Record<string, () => Line[]>>(() => ({
     help: () => [
@@ -183,6 +186,7 @@ export default function DevTerminal() {
     const cmd = raw.trim().toLowerCase();
     if (!cmd) return;
 
+    hasRunCommand.current = true;
     setHistory((h) => [...h, raw.trim()]);
     setHistIndex(-1);
 
@@ -249,7 +253,14 @@ export default function DevTerminal() {
   // box: one scrollable region on the page, not two competing ones. After a
   // command the prompt can end up below the fold, so nudge it back into view
   // — but only when it actually is, so short commands don't move the page.
+  //
+  // Gated on the visitor having run something. Effects also fire on mount,
+  // and `lines` starts non-empty with the boot banner, so without this the
+  // very first render scrolled the whole page down to the terminal: the
+  // site opened partway through the About section instead of at the top.
   useEffect(() => {
+    if (!hasRunCommand.current) return;
+
     const el = inputRef.current;
     if (!el) return;
     const box = el.getBoundingClientRect();

@@ -35,7 +35,7 @@ export const personalInfo = {
   title: 'Software Developer | AI/ML Engineer',
   email: 'anirudhtyagi188@gmail.com',
   summary:
-    "I'm a software developer working mainly in systems: C++, Qt, and the kind of code that has to be right rather than clever. Alongside that I spend a lot of time in machine learning and distributed systems, which is where most of my research has ended up. What I care about is the part that's hard to fake — software that holds up under load, behaves sensibly at the edges, and still makes sense to whoever opens it six months later.",
+    "I'm a software developer working mainly in systems: C++, Qt, and the kind of code that has to be right rather than clever. Alongside that I spend a lot of time in machine learning and distributed systems, which is where most of my research has ended up. Most of what I actually know came from building something badly the first time and then working out why it broke.",
   interests: [
     'Systems Programming',
     'Artificial Intelligence',

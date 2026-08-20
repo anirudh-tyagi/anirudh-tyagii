@@ -42,3 +42,4 @@ next-env.d.ts
 
 # local runtime data
 src/data/score.json
+.env*.local

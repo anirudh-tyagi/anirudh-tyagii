@@ -9,9 +9,16 @@
 
 // Tier 1 — the boring stuff the cat simply doesn't do. Refused flatly.
 const BLOCK_PATTERNS: RegExp[] = [
-  // Code requests: fenced blocks, or "write me a function/script/program"
+  // Code requests: fenced blocks, or "write me a function/script/program".
+  //
+  // Matching a verb directly against a LANGUAGE was wrong in both
+  // directions: it missed "write me a python function" (the pronoun broke
+  // the match) and it caught "can he write c++", which is a fair question
+  // about Anirudh. So the verb must land on an artifact noun, and a bare
+  // language only counts when it qualifies one.
   /```/,
-  /\b(write|generate|give me)\s+(a\s+)?(python|javascript|typescript|java|c\+\+|c#|sql|bash|code|function|script|program|algorithm)\b/i,
+  /\b(write|generate|create|make|give|show)\s+(me\s+)?(a|an|some|the)?\s*(\w+\s+)?(function|script|program|algorithm|snippet|code|query|regex)\b/i,
+  /\b(python|javascript|typescript|java|c\+\+|c#|sql|bash|shell)\s+(function|script|program|code|snippet|class|query)\b/i,
   /\b(def |function\s*\(|class\s+\w+|#include|SELECT\s+.+\s+FROM)\b/,
   /\bfix\s+(this|my)\s+(code|bug|error)\b/i,
   /\bsolve\s+(this|the)\s+(problem|equation|homework|assignment)\b/i,
@@ -55,7 +62,7 @@ export function isHostile(content: string): boolean {
 }
 
 export const OFF_TOPIC_REPLY =
-  "That's not what I'm here for. I do Anirudh: projects, work, papers. Not code, not homework, not your life choices.";
+  "I don't write code and I don't do homework. No thumbs, no interest. Ask me something else.";
 
 // Rotated so a visitor poking at it repeatedly gets a different put-down
 // each time rather than the same canned line.
@@ -79,5 +86,16 @@ function pick(list: string[]): string {
   return list[Math.floor(Math.random() * list.length)];
 }
 
+// Groq's free tier allows 8,000 tokens/minute across the whole site, and
+// the system prompt is re-sent with every message. Two or three visitors
+// chatting at once will hit it, so it needs an in-character answer rather
+// than a failure.
+const BUSY_REPLIES = [
+  "Too many humans talking at once. Come back in a minute, I'll still be here. Horizontally.",
+  "I've hit my words-per-minute limit. Cats have those. Try again shortly.",
+  "Give it a minute. I'm rate limited, which is just a nap with paperwork.",
+];
+
+export const busyReply = () => pick(BUSY_REPLIES);
 export const suspiciousReply = () => pick(SUSPICIOUS_REPLIES);
 export const hostileReply = () => pick(HOSTILE_REPLIES);

@@ -17,6 +17,20 @@ import { setLenis } from '@/lib/scroll';
  * hijacking it makes a page feel worse, not better.
  */
 export default function SmoothScroll() {
+  // Refreshing halfway down the page normally drops you back where you were:
+  // browsers restore scroll position by default, and it happens before Lenis
+  // or the section reveals have run, so you land mid-page with animations
+  // already spent. This is a single-screen intro site, so every load should
+  // start at the top — unless the URL names a section.
+  //
+  // Its own effect, deliberately: the one below bails out under reduced
+  // motion, and scroll restoration is not a motion preference.
+  // Scroll restoration and the fragment are handled by an inline script in
+  // the document head, because both are applied by the browser during load
+  // and an effect here would run too late to prevent either. Nothing to do
+  // from React: correcting after the fact is what produced the visible jump
+  // to a section followed by a scroll back to the top.
+
   useEffect(() => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
@@ -30,17 +44,9 @@ export default function SmoothScroll() {
 
     setLenis(lenis);
 
-    // A redirect from /about lands on /#about. The browser's native jump
-    // happens before Lenis takes over, so re-issue it through Lenis once
-    // the sections have laid out — otherwise you land near, but not at,
-    // the right section.
-    const hash = window.location.hash.slice(1);
-    if (hash) {
-      requestAnimationFrame(() => {
-        const el = document.getElementById(hash);
-        if (el) lenis.scrollTo(el, { immediate: true });
-      });
-    }
+    // No fragment handling here on purpose. The effect above strips the
+    // fragment and pins the page to the top, and honouring it here would
+    // put the scroll straight back.
 
     let frame = 0;
     const raf = (time: number) => {

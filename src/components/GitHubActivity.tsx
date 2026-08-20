@@ -159,7 +159,7 @@ function Heatmap({ calendar }: { calendar: ContributionCalendar }) {
 
       <div className="gh-legend">
         <span className="gh-legend-label">
-          {calendar.source === 'proxy' ? 'Public contributions' : 'All contributions'}
+          {calendar.includesPrivate ? 'Public and private contributions' : 'Public contributions'}
         </span>
         <div className="gh-legend-scale">
           <span>Less</span>
