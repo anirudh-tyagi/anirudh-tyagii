@@ -98,3 +98,29 @@ export function getClientIp(req: Request): string {
   }
   return req.headers.get('x-real-ip') ?? 'unknown';
 }
+
+
+// --- Score submissions ---------------------------------------------------
+// Separate windows from the chat limiter on purpose. Chat's global cap
+// exists to protect the Groq bill; a score submission costs one Redis
+// command, so it should not be able to consume that budget, and a chat
+// flood should not lock out the leaderboard.
+
+const SCORE_PER_MIN = 12;
+const SCORE_PER_HOUR = 80;
+const scorePerMinute = new Map<string, Window>();
+const scorePerHour = new Map<string, Window>();
+
+export function checkScoreRateLimit(ip: string): RateLimitResult {
+  const now = Date.now();
+
+  if (!hit(scorePerMinute, ip, PER_IP_WINDOW_MS, SCORE_PER_MIN)) {
+    const w = scorePerMinute.get(ip)!;
+    return { allowed: false, retryAfterSeconds: Math.ceil((w.resetAt - now) / 1000) };
+  }
+  if (!hit(scorePerHour, ip, PER_IP_HOURLY_WINDOW_MS, SCORE_PER_HOUR)) {
+    const w = scorePerHour.get(ip)!;
+    return { allowed: false, retryAfterSeconds: Math.ceil((w.resetAt - now) / 1000) };
+  }
+  return { allowed: true };
+}

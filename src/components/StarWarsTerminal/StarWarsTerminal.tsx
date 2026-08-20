@@ -59,24 +59,109 @@ interface Burst {
   alive: boolean;
 }
 
+// --- Best score -----------------------------------------------------------
+// The displayed best is whatever we currently believe: the browser's own
+// record until the server answers, then the global figure. localStorage is
+// kept as the offline fallback so the HUD still shows something sensible
+// when the store is not configured or the network is down.
+
 const BEST_KEY = 'starWarsHighScore';
 let bestListeners: (() => void)[] = [];
-let bestCache: string | null = null;
+let bestValue: number | null = null;
+let bestIsGlobal = false;
 
-function readBest(): string {
-  if (bestCache === null) bestCache = window.localStorage.getItem(BEST_KEY) ?? '0';
-  return bestCache;
-}
-function writeBest(value: number) {
-  bestCache = String(value);
-  window.localStorage.setItem(BEST_KEY, bestCache);
+function notify() {
   for (const l of bestListeners) l();
 }
+
+function readBest(): number {
+  if (bestValue === null) {
+    bestValue = Number(window.localStorage.getItem(BEST_KEY) ?? '0') || 0;
+  }
+  return bestValue;
+}
+
+function setBest(value: number, global: boolean) {
+  const wasGlobal = bestIsGlobal;
+  if (global) bestIsGlobal = true;
+
+  const higher = bestValue === null || value > bestValue;
+  if (higher) bestValue = value;
+
+  // The flag is part of what the HUD renders, so a flip has to notify even
+  // when the number itself did not move.
+  if (higher || (!wasGlobal && bestIsGlobal)) notify();
+}
+
 function subscribeBest(cb: () => void) {
   bestListeners.push(cb);
   return () => {
     bestListeners = bestListeners.filter((l) => l !== cb);
   };
+}
+
+/** Whether the number on screen is the world record or just this browser's. */
+function readBestIsGlobal(): boolean {
+  return bestIsGlobal;
+}
+
+async function fetchGlobalBest() {
+  try {
+    const res = await fetch('/api/score', { cache: 'no-store' });
+    if (!res.ok) return;
+    const data = (await res.json()) as { best?: number; available?: boolean };
+    if (data.available && typeof data.best === 'number') {
+      setBest(data.best, true);
+    }
+  } catch {
+    // Offline or unconfigured: the local best already on screen stands.
+  }
+}
+
+// A run scores one point per kill, and submitting on every one of them would
+// burn through the per-minute allowance mid-game. Submit at most this often,
+// and always flush the final figure when the page goes away.
+const SUBMIT_INTERVAL_MS = 8000;
+let lastSubmitAt = 0;
+let pendingScore = 0;
+
+async function pushScore(score: number) {
+  pendingScore = 0;
+  try {
+    const res = await fetch('/api/score', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ score }),
+      keepalive: true,
+    });
+    if (!res.ok) return;
+    const data = (await res.json()) as { best?: number; available?: boolean };
+    if (data.available && typeof data.best === 'number') setBest(data.best, true);
+  } catch {
+    // Keep the local record; the next run will try again.
+  }
+}
+
+function recordScore(score: number) {
+  if (score <= 0) return;
+
+  // Local record and the HUD update immediately; the server is caught up
+  // separately so a slow round trip never delays the number on screen.
+  if (score > readBest()) {
+    window.localStorage.setItem(BEST_KEY, String(score));
+    setBest(score, false);
+  }
+
+  pendingScore = Math.max(pendingScore, score);
+  const now = Date.now();
+  if (now - lastSubmitAt >= SUBMIT_INTERVAL_MS) {
+    lastSubmitAt = now;
+    void pushScore(pendingScore);
+  }
+}
+
+function flushScore() {
+  if (pendingScore > 0) void pushScore(pendingScore);
 }
 
 export default function StarWarsTerminal() {
@@ -85,8 +170,22 @@ export default function StarWarsTerminal() {
   const [score, setScore] = useState(0);
   const scoreRef = useRef(0);
 
-  const storedBest = Number(useSyncExternalStore(subscribeBest, readBest, () => '0'));
+  const storedBest = useSyncExternalStore(subscribeBest, readBest, () => 0);
+  const isWorldRecord = useSyncExternalStore(subscribeBest, readBestIsGlobal, () => false);
   const highScore = Math.max(score, storedBest);
+
+  useEffect(() => {
+    void fetchGlobalBest();
+
+    // pagehide rather than unload: it is the event that still fires on iOS
+    // and when a tab is frozen, and fetch(keepalive) survives it.
+    const onLeave = () => flushScore();
+    window.addEventListener('pagehide', onLeave);
+    return () => {
+      onLeave();
+      window.removeEventListener('pagehide', onLeave);
+    };
+  }, []);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -403,6 +502,13 @@ export default function StarWarsTerminal() {
     };
     const hitBox = new THREE.Box3();
     const shipPos = new THREE.Vector3();
+    // Swept-collision scratch. Hoisted like the rest: allocating a Vector3
+    // per bolt per ship per frame is exactly the kind of garbage that shows
+    // up as periodic hitching.
+    const prevPos = new THREE.Vector3();
+    const sweepDir = new THREE.Vector3();
+    const sweepRay = new THREE.Ray();
+    const hitPoint = new THREE.Vector3();
     // Hoisted: this used to be constructed inside the bolt/ship loop, so it
     // allocated once per pair per frame and fed the garbage collector.
     const hitSize = new THREE.Vector3(SHIP_SPAN, SHIP_SPAN, SHIP_SPAN);
@@ -459,7 +565,9 @@ export default function StarWarsTerminal() {
       // Bolts
       for (const bolt of bolts) {
         if (!bolt.alive) continue;
+        prevPos.copy(bolt.mesh.position);
         bolt.mesh.position.addScaledVector(bolt.vel, dt);
+        const stepLen = prevPos.distanceTo(bolt.mesh.position);
         bolt.life += dt;
         if (bolt.life > 110 || bolt.mesh.position.z < SPAWN_Z - 400) {
           bolt.alive = false;
@@ -473,7 +581,21 @@ export default function StarWarsTerminal() {
           // A box around the hull is a fair proxy for a TIE and far cheaper
           // than per-triangle intersection every frame.
           hitBox.setFromCenterAndSize(shipPos, hitSize);
-          if (!hitBox.containsPoint(bolt.mesh.position)) continue;
+
+          // A bolt covers 26 units in a frame at 60fps, and more when the
+          // frame rate dips, against a hull box only 23 units from centre
+          // to face. Testing the end point alone therefore steps straight
+          // over ships: the shot visibly passes through and nothing
+          // happens. Sweep the segment the bolt actually travelled instead.
+          let struck = hitBox.containsPoint(bolt.mesh.position);
+          if (!struck && stepLen > 0) {
+            sweepDir.copy(bolt.mesh.position).sub(prevPos).divideScalar(stepLen);
+            sweepRay.set(prevPos, sweepDir);
+            struck =
+              sweepRay.intersectBox(hitBox, hitPoint) !== null &&
+              prevPos.distanceTo(hitPoint) <= stepLen;
+          }
+          if (!struck) continue;
 
           explodeAt(shipPos);
           ship.alive = false;
@@ -483,7 +605,7 @@ export default function StarWarsTerminal() {
 
           scoreRef.current += 1;
           setScore(scoreRef.current);
-          if (scoreRef.current > Number(readBest())) writeBest(scoreRef.current);
+          recordScore(scoreRef.current);
           break;
         }
       }
@@ -558,7 +680,9 @@ export default function StarWarsTerminal() {
     <div className="star-wars-terminal">
       <div className="sw-score-container">
         <div>SCORE {score.toString().padStart(5, '0')}</div>
-        <div className="sw-score-top">BEST {highScore.toString().padStart(5, '0')}</div>
+        <div className="sw-score-top">
+          {isWorldRecord ? 'WORLD' : 'BEST'} {highScore.toString().padStart(5, '0')}
+        </div>
       </div>
       <canvas ref={canvasRef} />
       {/* Vignette lives in CSS rather than the render, so it costs nothing
