@@ -14,27 +14,79 @@ const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
 const MODEL = process.env.GROQ_MODEL || 'openai/gpt-oss-120b';
 const REQUEST_TIMEOUT_MS = 10_000;
 
+// Generous next to the per-message cap in sanitizeMessages, but it stops
+// the route parsing a multi-megabyte body before it can reject it.
+const MAX_BODY_BYTES = 16 * 1024;
+
+/**
+ * This endpoint spends money on every call, so it should only answer the
+ * site it belongs to. Browsers set Origin on cross-site POSTs and cannot
+ * forge it, which stops another page embedding this chat and billing it to
+ * us. It is not a defence against curl, which can send any header it likes
+ * — the rate limiter and the daily budget cap are what bound that — but it
+ * removes the cheapest form of abuse.
+ */
+function isAllowedOrigin(req: Request): boolean {
+  const origin = req.headers.get('origin');
+  // Same-origin fetches from some browsers omit Origin entirely.
+  if (!origin) return true;
+
+  try {
+    const host = req.headers.get('host');
+    return new URL(origin).host === host;
+  } catch {
+    return false;
+  }
+}
+
 export async function POST(req: Request) {
   try {
     if (req.headers.get('content-type')?.includes('application/json') !== true) {
-      return NextResponse.json({ error: 'Invalid content type' }, { status: 400 });
+      return NextResponse.json({ error: "That didn't arrive in a shape I recognise." }, { status: 400 });
+    }
+
+    if (!isAllowedOrigin(req)) {
+      return NextResponse.json({ error: 'Not for you.' }, { status: 403 });
+    }
+
+    const declaredLength = Number(req.headers.get('content-length') ?? 0);
+    if (declaredLength > MAX_BODY_BYTES) {
+      return NextResponse.json(
+        { error: "That's far too much text. Try a question instead." },
+        { status: 413 }
+      );
     }
 
     const ip = getClientIp(req);
     const rateLimit = checkRateLimit(ip);
     if (!rateLimit.allowed) {
       return NextResponse.json(
-        { error: 'Meow, too many pets at once. Give me a second 🐾' },
+        { error: busyReply() },
         { status: 429, headers: { 'Retry-After': String(rateLimit.retryAfterSeconds ?? 60) } }
       );
     }
 
-    const body = await req.json().catch(() => null);
-    if (!body) {
-      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
+    const raw = await req.text().catch(() => null);
+    if (raw === null || raw.length > MAX_BODY_BYTES) {
+      return NextResponse.json(
+        { error: "That's far too much text. Try a question instead." },
+        { status: 413 }
+      );
     }
 
-    const sanitized = sanitizeMessages(body.messages);
+    const body = ((): unknown => {
+      try {
+        return JSON.parse(raw);
+      } catch {
+        return null;
+      }
+    })();
+
+    if (!body || typeof body !== 'object') {
+      return NextResponse.json({ error: "That didn't arrive in a shape I recognise." }, { status: 400 });
+    }
+
+    const sanitized = sanitizeMessages((body as { messages?: unknown }).messages);
     if (!sanitized.ok) {
       return NextResponse.json({ error: sanitized.error }, { status: 400 });
     }

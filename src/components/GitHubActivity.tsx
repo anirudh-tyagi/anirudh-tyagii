@@ -103,7 +103,7 @@ function Heatmap({ calendar }: { calendar: ContributionCalendar }) {
 
   return (
     <div className="gh-heatmap-wrap" ref={wrapRef}>
-      <div className="gh-heatmap-scroll" data-no-page-turn data-lenis-prevent>
+      <div className="gh-heatmap-scroll">
         <div className="gh-heatmap">
           <div className="gh-months">
             {monthLabels.map((label, i) => (

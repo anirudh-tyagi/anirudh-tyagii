@@ -23,6 +23,7 @@ export default function CatChat() {
   // animation JSON ships as a cached static asset, not client JS.
   const [catAnimation, setCatAnimation] = useState<object | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     // "tap" on touch, "click" on a mouse — the nudge is an instruction, so
@@ -108,7 +109,7 @@ export default function CatChat() {
       } else if (res.status === 429) {
         setResponse(data.error || 'Too many questions. I have a nap booked. Try again shortly.');
       } else if (res.status === 400 && data.error) {
-        setResponse(`Meow... ${data.error.toLowerCase()}`);
+        setResponse(data.error);
       } else {
         setResponse('I have no idea what that was. Use words. Preferably about Anirudh.');
         console.error('Chat Error:', data.error);
@@ -165,17 +166,17 @@ export default function CatChat() {
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
+                ref={inputRef}
                 placeholder="ask about Anirudh..."
                 className="cat-chat-input"
-                disabled={isLoading}
                 maxLength={500}
+                autoComplete="off"
               />
               <button type="submit" disabled={isLoading} className="cat-chat-submit" title="Send">
                 {isLoading ? '🐾' : '➤'}
               </button>
             </form>
 
-            <div className="cat-chat-arrow" />
           </motion.div>
         )}
       </AnimatePresence>

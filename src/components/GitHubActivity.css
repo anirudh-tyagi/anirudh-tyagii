@@ -58,7 +58,7 @@
 
 .gh-stats {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(140px, 100%), 1fr));
     border-bottom: 1px solid var(--border);
 }
 
@@ -254,7 +254,7 @@
 
 .gh-columns {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr));
     gap: 1rem;
     margin-top: 1rem;
 }

@@ -1,17 +1,27 @@
 .star-wars-terminal {
     position: fixed;
+    /* inset sizes this to the layout viewport, which excludes the scrollbar.
+       100vw includes it, so the element was ~15px wider than the canvas
+       bitmap the script sizes from window.innerWidth, stretching the
+       starfield and pushing its vanishing point off centre.
+       dvh so collapsing mobile browser chrome doesn't reveal a seam. */
     inset: 0;
-    /* Uses dvh so mobile browser chrome collapsing doesn't reveal a seam. */
-    width: 100vw;
     height: 100dvh;
     pointer-events: auto;
     z-index: -1;
-    background-color: #01030a;
+    background-color: #000;
     overflow: hidden;
 }
 
 .star-wars-terminal canvas {
     display: block;
+    /* The renderer sets the drawing buffer in device pixels and is told not
+       to touch inline style, so the element's layout size has to be pinned
+       here. Without this the canvas lays out at width x devicePixelRatio,
+       which is why the framing was wrong by a different amount on every
+       screen. */
+    width: 100%;
+    height: 100%;
 }
 
 .sw-score-container {
@@ -49,4 +59,59 @@
 
 @media (prefers-reduced-motion: reduce) {
     .sw-score-container { text-shadow: none; }
+}
+
+/* Vignette and crosshair are DOM, not render passes: they never change per
+   frame, so drawing them in WebGL would be pure waste. The vignette is the
+   main reason foreground text stays readable over a moving scene. */
+.sw-vignette {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+        radial-gradient(ellipse at center,
+            rgba(0, 0, 0, 0) 30%,
+            rgba(0, 0, 0, 0.45) 68%,
+            rgba(0, 0, 0, 0.82) 100%);
+}
+
+.sw-crosshair {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 54px;
+    height: 54px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s var(--ease-standard);
+    border: 1px solid rgba(255, 90, 60, 0.45);
+    border-radius: 50%;
+}
+
+.sw-crosshair::before,
+.sw-crosshair::after {
+    content: '';
+    position: absolute;
+    background: rgba(255, 90, 60, 0.5);
+}
+
+.sw-crosshair::before {
+    left: 50%;
+    top: -10px;
+    bottom: -10px;
+    width: 1px;
+    transform: translateX(-50%);
+}
+
+.sw-crosshair::after {
+    top: 50%;
+    left: -10px;
+    right: -10px;
+    height: 1px;
+    transform: translateY(-50%);
+}
+
+/* No pointer, no crosshair. */
+@media (hover: none) {
+    .sw-crosshair { display: none; }
 }

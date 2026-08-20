@@ -38,7 +38,7 @@ function stripHiddenChars(input: string): string {
 
 export function sanitizeMessages(raw: unknown): SanitizeResult {
   if (!Array.isArray(raw) || raw.length === 0) {
-    return { ok: false, error: 'Invalid messages format' };
+    return { ok: false, error: "That wasn't a question. Try using words." };
   }
 
   // Only ever accept user/assistant turns from the client. A `system`
@@ -62,7 +62,7 @@ export function sanitizeMessages(raw: unknown): SanitizeResult {
     const content = stripHiddenChars((m as { content: string }).content);
     if (!content) continue;
     if (content.length > MAX_MESSAGE_CHARS) {
-      return { ok: false, error: `Message too long (max ${MAX_MESSAGE_CHARS} characters)` };
+      return { ok: false, error: `That's a lot of words. Keep it under ${MAX_MESSAGE_CHARS} characters and I'll consider reading it.` };
     }
 
     cleaned.push({ role, content });
@@ -70,10 +70,10 @@ export function sanitizeMessages(raw: unknown): SanitizeResult {
   }
 
   if (cleaned.length === 0) {
-    return { ok: false, error: 'No valid messages provided' };
+    return { ok: false, error: "You sent nothing. I read all of it." };
   }
   if (totalChars > MAX_TOTAL_CHARS) {
-    return { ok: false, error: 'Conversation too long' };
+    return { ok: false, error: "We've talked enough for one sitting. Refresh and start over." };
   }
 
   // Keep only the most recent turns.
@@ -81,7 +81,7 @@ export function sanitizeMessages(raw: unknown): SanitizeResult {
 
   // The final message must be from the user — that's the turn being answered.
   if (trimmed[trimmed.length - 1].role !== 'user') {
-    return { ok: false, error: 'Last message must be from the user' };
+    return { ok: false, error: "Something got tangled. Ask again." };
   }
 
   return { ok: true, messages: trimmed };

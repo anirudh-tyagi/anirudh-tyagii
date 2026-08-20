@@ -23,8 +23,32 @@ const perIpMinute = new Map<string, Window>();
 const perIpHour = new Map<string, Window>();
 let globalDay: Window = { count: 0, resetAt: Date.now() + GLOBAL_DAILY_WINDOW_MS };
 
+// Expired entries were never removed, so a flood from many distinct
+// addresses grew these Maps without bound until the instance ran out of
+// memory: the limiter itself became the denial-of-service vector. Pruning
+// is amortised, only sweeping once the map is already large.
+const MAX_TRACKED_IPS = 20_000;
+
+function prune(map: Map<string, Window>, now: number) {
+  if (map.size < MAX_TRACKED_IPS) return;
+  for (const [key, w] of map) {
+    if (now >= w.resetAt) map.delete(key);
+  }
+  // Still oversized after dropping everything expired: an active flood.
+  // Evict oldest-first (Map preserves insertion order) to stay bounded.
+  if (map.size >= MAX_TRACKED_IPS) {
+    const excess = map.size - Math.floor(MAX_TRACKED_IPS / 2);
+    let i = 0;
+    for (const key of map.keys()) {
+      if (i++ >= excess) break;
+      map.delete(key);
+    }
+  }
+}
+
 function hit(map: Map<string, Window>, key: string, windowMs: number, limit: number): boolean {
   const now = Date.now();
+  prune(map, now);
   const w = map.get(key);
   if (!w || now >= w.resetAt) {
     map.set(key, { count: 1, resetAt: now + windowMs });

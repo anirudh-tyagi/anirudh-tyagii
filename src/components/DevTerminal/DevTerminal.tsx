@@ -1,7 +1,6 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { scrollElementIntoView } from '@/lib/scroll';
 import {
   personalInfo, education, experience, skills, publications, achievements, links,
 } from '@/data/profile';
@@ -46,9 +45,7 @@ export default function DevTerminal() {
   const [histIndex, setHistIndex] = useState(-1);
 
   const inputRef = useRef<HTMLInputElement>(null);
-  // Set once the visitor runs a command, so the scroll nudge below can tell
-  // a real command apart from the initial mount.
-  const hasRunCommand = useRef(false);
+  const bodyRef = useRef<HTMLDivElement>(null);
 
   const commands = useMemo<Record<string, () => Line[]>>(() => ({
     help: () => [
@@ -186,7 +183,6 @@ export default function DevTerminal() {
     const cmd = raw.trim().toLowerCase();
     if (!cmd) return;
 
-    hasRunCommand.current = true;
     setHistory((h) => [...h, raw.trim()]);
     setHistIndex(-1);
 
@@ -249,25 +245,15 @@ export default function DevTerminal() {
     }
   };
 
-  // The terminal grows with its output instead of scrolling inside a fixed
-  // box: one scrollable region on the page, not two competing ones. After a
-  // command the prompt can end up below the fold, so nudge it back into view
-  // — but only when it actually is, so short commands don't move the page.
-  //
-  // Gated on the visitor having run something. Effects also fire on mount,
-  // and `lines` starts non-empty with the boot banner, so without this the
-  // very first render scrolled the whole page down to the terminal: the
-  // site opened partway through the About section instead of at the top.
+  // Fixed box: new output lands at the bottom and older lines ride up out
+  // of view, so the panel never changes size no matter how much you run.
+  // overflow is hidden, but scrollTop still works programmatically, so the
+  // newest output is pinned into view while older lines ride up out of it.
   useEffect(() => {
-    if (!hasRunCommand.current) return;
-
-    const el = inputRef.current;
-    if (!el) return;
-    const box = el.getBoundingClientRect();
-    if (box.bottom > window.innerHeight || box.top < 0) {
-      scrollElementIntoView(el);
-    }
+    const el = bodyRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
   }, [lines]);
+
 
   return (
     <div
@@ -285,8 +271,7 @@ export default function DevTerminal() {
         <span className="devterm-bar-title">anirudh@portfolio : zsh</span>
       </div>
 
-      {/* Marked so the page-turn gesture ignores wheel events in here. */}
-      <div className="devterm-body">
+      <div className="devterm-body" ref={bodyRef}>
         {lines.map((line) =>
           line.kind === 'link' && line.href ? (
             <a

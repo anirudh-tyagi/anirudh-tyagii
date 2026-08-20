@@ -84,37 +84,42 @@
     position: absolute;
     bottom: 85px;
     right: 0;
-    width: 320px;
-    background: rgba(15, 20, 25, 0.85);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(0, 255, 159, 0.3);
-    color: #fff;
-    border-radius: 12px;
-    font-size: 0.85rem;
+    width: 330px;
+    background: var(--surface);
+    backdrop-filter: blur(16px) saturate(120%);
+    -webkit-backdrop-filter: blur(16px) saturate(120%);
+    /* Resting border matches the other panels. The accent is earned on
+       focus, not worn permanently. */
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 16px;
+    font-size: 0.82rem;
     font-family: var(--font-mono);
     z-index: 20;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4), 0 0 20px rgba(0, 255, 159, 0.1);
+    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
+    transition: border-color 0.3s var(--ease-standard),
+                box-shadow 0.3s var(--ease-standard);
+    overflow: hidden;
     display: flex;
     flex-direction: column;
 }
 
 .cat-chat-content {
-    padding: 1rem;
-    line-height: 1.6;
+    padding: var(--space-4);
+    line-height: 1.7;
     max-height: 300px;
     overflow-y: auto;
-    color: #e0e0e0;
+    color: var(--text-dim);
+    overscroll-behavior: contain;
 }
 
 .cat-chat-form {
     display: flex;
-    border-top: 1px solid rgba(0, 255, 159, 0.2);
-    padding: 0.5rem;
-    gap: 0.5rem;
-    background: rgba(0, 0, 0, 0.2);
-    border-bottom-left-radius: 12px;
-    border-bottom-right-radius: 12px;
+    align-items: center;
+    border-top: 1px solid var(--border);
+    padding: 0.5rem var(--space-4);
+    gap: var(--space-2);
+    background: rgba(255, 255, 255, 0.02);
 }
 
 .cat-chat-tilde { color: var(--text-faint); font-weight: 400; }
@@ -122,9 +127,9 @@
 .cat-chat-caret {
     color: var(--accent);
     font-family: var(--font-mono);
-    font-size: 0.85rem;
-    padding-left: 0.35rem;
+    font-size: 0.82rem;
     user-select: none;
+    line-height: 1;
 }
 
 /* Paw-print typing indicator. */
@@ -166,23 +171,23 @@
     background: transparent;
     border: none;
     outline: none;
-    color: #00ff9f;
+    color: var(--text);
     font-family: var(--font-mono);
-    font-size: 0.85rem;
-    padding: 0.25rem 0.5rem;
+    font-size: 0.82rem;
+    padding: 0.3rem 0;
+    caret-color: var(--accent);
+    min-width: 0;
 }
 
 .cat-chat-input::placeholder {
-    color: rgba(0, 255, 159, 0.3);
+    color: rgba(255, 255, 255, 0.24);
 }
 
 .cat-chat-submit {
-    background: rgba(0, 255, 159, 0.1);
-    border: 1px solid rgba(0, 255, 159, 0.3);
-    color: #00ff9f;
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
+    background: rgba(0, 255, 159, 0.08);
+    border: 1px solid rgba(0, 255, 159, 0.22);
+    color: var(--accent);
+    border-radius: 6px;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -198,27 +203,6 @@
 .cat-chat-submit:disabled {
     opacity: 0.5;
     cursor: not-allowed;
-}
-
-.cat-chat-arrow {
-    position: absolute;
-    bottom: -8px;
-    right: 28px;
-    width: 0;
-    height: 0;
-    border-top: 8px solid rgba(0, 255, 159, 0.3);
-    border-right: 8px solid transparent;
-    border-left: 8px solid transparent;
-}
-
-.cat-chat-arrow::after {
-    content: '';
-    position: absolute;
-    bottom: 1px;
-    left: -7px;
-    border-top: 7px solid rgba(15, 20, 25, 0.95);
-    border-right: 7px solid transparent;
-    border-left: 7px solid transparent;
 }
 
 /* Until the animation lands the circle is empty, so the ring and glow
@@ -287,8 +271,8 @@
     align-items: center;
     justify-content: space-between;
     gap: 0.5rem;
-    padding: 0.6rem 0.85rem;
-    border-bottom: 1px solid rgba(0, 255, 159, 0.18);
+    padding: 0.6rem var(--space-4);
+    border-bottom: 1px solid var(--border);
 }
 
 .cat-chat-title {
@@ -336,4 +320,19 @@
 
 @media (prefers-reduced-motion: reduce) {
     .cat-chat-live { animation: none; }
+}
+
+/* The accent appears only while the panel is actually in use. */
+.cat-chat-tooltip:focus-within {
+    border-color: rgba(0, 255, 159, 0.45);
+    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45), 0 0 26px rgba(0, 255, 159, 0.06);
+}
+
+/* Square, aligned to the prompt row rather than floating above it. */
+.cat-chat-submit {
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+    border-radius: 6px;
+    font-size: 0.75rem;
 }

@@ -64,11 +64,14 @@
     user-select: text;
     -webkit-user-select: text;
     cursor: text;
-    /* Grows with its content rather than scrolling in a fixed box. A nested
-       scroller inside a smooth-scrolled page means two scroll engines
-       fighting over the same wheel event, which is what felt laggy. */
-    min-height: clamp(300px, 46vh, 460px);
-    overflow: visible;
+    /* Fixed box that never takes the wheel.
+       overflow:hidden means the pointer sitting over the terminal scrolls
+       the page like anywhere else, while scrollTop still works from script,
+       so new output is pinned into view and older lines ride up out of it.
+       An inner scroller here would have swallowed the page scroll and left
+       a dead zone in the middle of the About section. */
+    height: clamp(300px, 46vh, 460px);
+    overflow: hidden;
     padding: 1rem 1.1rem 1.2rem;
     font-family: var(--font-mono);
     font-size: 0.82rem;
@@ -172,3 +175,4 @@
 @media (prefers-reduced-motion: reduce) {
     .devterm-chip:hover { transform: none; }
 }
+
