@@ -8,6 +8,10 @@
     inset: 0;
     height: 100dvh;
     pointer-events: auto;
+    /* The crosshair IS the pointer out here, so the arrow would be a second
+       one drawn on top of it. Interactive elements set their own cursor and
+       are unaffected: this only applies where the scene is the hit target. */
+    cursor: none;
     z-index: -1;
     background-color: #000;
     overflow: hidden;
@@ -75,43 +79,101 @@
             rgba(0, 0, 0, 0.82) 100%);
 }
 
-.sw-crosshair {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 54px;
-    height: 54px;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.25s var(--ease-standard);
-    border: 1px solid rgba(255, 90, 60, 0.45);
-    border-radius: 50%;
-}
-
-.sw-crosshair::before,
-.sw-crosshair::after {
-    content: '';
-    position: absolute;
-    background: rgba(255, 90, 60, 0.5);
-}
-
-.sw-crosshair::before {
-    left: 50%;
-    top: -10px;
-    bottom: -10px;
-    width: 1px;
-    transform: translateX(-50%);
-}
-
-.sw-crosshair::after {
-    top: 50%;
-    left: -10px;
-    right: -10px;
-    height: 1px;
-    transform: translateY(-50%);
-}
-
 /* No pointer, no crosshair. */
 @media (hover: none) {
-    .sw-crosshair { display: none; }
+    }
+
+/* ===== Cursor ===========================================================
+   The page's pointer. A ring and a dot, nothing else: it is in front of
+   every word on the site and follows the eye everywhere, so it has to be
+   quiet enough to forget. The native arrow is hidden while this is live,
+   and the class that hides it is added by script, so if the effect never
+   runs the ordinary cursor is still there. */
+
+html.sw-reticle-on,
+html.sw-reticle-on * {
+    cursor: none;
+}
+
+/* Typing is the one thing a caret does better than anything else. */
+html.sw-reticle-on input,
+html.sw-reticle-on textarea,
+html.sw-reticle-on select,
+html.sw-reticle-on .devterm,
+html.sw-reticle-on .devterm * {
+    cursor: text;
+}
+
+.sw-cursor {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 22px;
+    height: 22px;
+    margin: -11px 0 0 -11px;
+    pointer-events: none;
+    z-index: 100000;
+    opacity: 0;
+    transition: opacity 0.2s var(--ease-standard);
+    will-change: transform;
+}
+
+html.sw-reticle-on .sw-cursor { opacity: 1; }
+
+/* Over a text field the caret takes over and this withdraws entirely. */
+.sw-cursor[data-mode='text'] { opacity: 0; }
+
+.sw-cursor-ring {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 1px solid rgba(0, 255, 159, 0.5);
+    transition: opacity 0.18s var(--ease-standard),
+                transform 0.18s var(--ease-standard);
+}
+
+.sw-cursor-dot {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 3px;
+    height: 3px;
+    margin: -1.5px 0 0 -1.5px;
+    border-radius: 50%;
+    background: var(--accent);
+    transition: transform 0.18s var(--ease-standard),
+                background 0.18s var(--ease-standard),
+                box-shadow 0.18s var(--ease-standard);
+}
+
+/* Over a control: the ring goes and the dot steps forward, so it still
+   reads as interactive without a target drawn on a button. */
+.sw-cursor[data-mode='ui'] .sw-cursor-ring {
+    opacity: 0;
+    transform: scale(0.5);
+}
+
+.sw-cursor[data-mode='ui'] .sw-cursor-dot {
+    transform: scale(1.9);
+    background: #fff;
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.45);
+}
+
+/* Click feedback: a short contract, which is the whole confirmation that
+   the press registered. */
+.sw-cursor.is-firing .sw-cursor-ring {
+    animation: sw-cursor-press 0.2s var(--ease-standard);
+}
+
+@keyframes sw-cursor-press {
+    50% { transform: scale(0.7); opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .sw-cursor.is-firing .sw-cursor-ring { animation: none; }
+}
+
+/* Touch has no pointer to replace. */
+@media (hover: none), (pointer: coarse) {
+    .sw-cursor { display: none; }
 }

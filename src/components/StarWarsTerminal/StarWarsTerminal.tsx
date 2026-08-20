@@ -452,18 +452,48 @@ export default function StarWarsTerminal() {
       lastScrollY = y;
     };
 
+    // Anything that carries its own affordance. Over these the reticle is
+    // the wrong signal: a button is not a target.
+    const UI_SELECTOR = 'a,button,[role="button"],.dock-panel,.cat-chat-container';
+    // Typing needs the precision of a real caret, so these keep the I-beam
+    // and the reticle gets out of the way entirely.
+    const TEXT_SELECTOR = 'input,textarea,select,.devterm';
+
     const onPointerMove = (e: PointerEvent) => {
       if (e.pointerType === 'touch') return;
       pointer.x = (e.clientX / window.innerWidth) * 2 - 1;
       pointer.y = -(e.clientY / window.innerHeight) * 2 + 1;
+
       const ch = crosshairRef.current;
-      if (ch) {
-        ch.style.transform = `translate(${e.clientX}px, ${e.clientY}px) translate(-50%, -50%)`;
-        ch.style.opacity = '1';
-      }
+      if (!ch) return;
+
+      const el = e.target instanceof Element ? e.target : null;
+      const mode = el?.closest(TEXT_SELECTOR)
+        ? 'text'
+        : el?.closest(UI_SELECTOR)
+          ? 'ui'
+          : 'armed';
+      ch.dataset.mode = mode;
+
+      ch.style.transform = `translate3d(${e.clientX}px, ${e.clientY}px, 0)`;
     };
 
+    let recoilTimer: ReturnType<typeof setTimeout> | undefined;
+
     const onFire = (e: MouseEvent) => {
+      // Recoil is the confirmation that the click did something, and it is
+      // what teaches the control: press, the sight kicks, bolts leave.
+      const ch = crosshairRef.current;
+      if (ch && ch.dataset.mode === 'armed') {
+        ch.classList.remove('is-firing');
+        // Reflow, so a rapid second click restarts the animation instead of
+        // being swallowed by the still-running one.
+        void ch.offsetWidth;
+        ch.classList.add('is-firing');
+        clearTimeout(recoilTimer);
+        recoilTimer = setTimeout(() => ch.classList.remove('is-firing'), 220);
+      }
+
       pointer.x = (e.clientX / window.innerWidth) * 2 - 1;
       pointer.y = -(e.clientY / window.innerHeight) * 2 + 1;
       raycaster.setFromCamera(pointer, camera);
@@ -643,6 +673,9 @@ export default function StarWarsTerminal() {
       resizeTimer = setTimeout(resize, 150);
     };
 
+    const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+    if (finePointer) document.documentElement.classList.add('sw-reticle-on');
+
     document.addEventListener('visibilitychange', onVisibility);
     window.addEventListener('resize', onResize);
     window.addEventListener('scroll', onScroll, { passive: true });
@@ -652,6 +685,8 @@ export default function StarWarsTerminal() {
     return () => {
       cancelAnimationFrame(raf);
       clearTimeout(resizeTimer);
+      clearTimeout(recoilTimer);
+      document.documentElement.classList.remove('sw-reticle-on');
       document.removeEventListener('visibilitychange', onVisibility);
       window.removeEventListener('resize', onResize);
       window.removeEventListener('scroll', onScroll);
@@ -677,18 +712,27 @@ export default function StarWarsTerminal() {
   }, []);
 
   return (
-    <div className="star-wars-terminal">
-      <div className="sw-score-container">
-        <div>SCORE {score.toString().padStart(5, '0')}</div>
-        <div className="sw-score-top">
-          {isWorldRecord ? 'WORLD' : 'BEST'} {highScore.toString().padStart(5, '0')}
+    <>
+      <div className="star-wars-terminal">
+        <div className="sw-score-container">
+          <div>SCORE {score.toString().padStart(5, '0')}</div>
+          <div className="sw-score-top">
+            {isWorldRecord ? 'WORLD' : 'BEST'} {highScore.toString().padStart(5, '0')}
+          </div>
         </div>
+        <canvas ref={canvasRef} />
+        {/* Vignette lives in CSS rather than the render, so it costs nothing
+            per frame and keeps foreground text readable. */}
+        <div className="sw-vignette" aria-hidden="true" />
       </div>
-      <canvas ref={canvasRef} />
-      {/* Vignette lives in CSS rather than the render, so it costs nothing
-          per frame and keeps foreground text readable. */}
-      <div className="sw-vignette" aria-hidden="true" />
-      <div ref={crosshairRef} className="sw-crosshair" aria-hidden="true" />
-    </div>
+
+      {/* Outside the scene on purpose. The scene sits at z-index -1, and a
+          child cannot escape its parent's stacking context, so in there the
+          reticle could never draw over the page. */}
+      <div ref={crosshairRef} className="sw-cursor" data-mode="armed" aria-hidden="true">
+        <span className="sw-cursor-ring" />
+        <span className="sw-cursor-dot" />
+      </div>
+    </>
   );
 }
