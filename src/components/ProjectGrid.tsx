@@ -33,7 +33,7 @@ export default function ProjectGrid({ projects }: { projects: Project[] }) {
               ease: [0.25, 0.46, 0.45, 0.94],
             }}
           >
-            {/* Only one project has a visual worth showing. The rest are
+            {/* Only some projects have a visual worth showing. The rest are
                 text-only rather than padded out with a placeholder tile. */}
             {project.image && (
               <a
