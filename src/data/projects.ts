@@ -46,6 +46,7 @@ export const curatedProjects: CuratedProject[] = [
     blurb:
       'A 2D arcade shooter built with C++/Qt6 QML. Collision pipeline uses a uniform-grid spatial hash: 72x fewer per-frame AABB tests and 8.7x lower collision time than an exhaustive sweep at 1,000-bullet x 2,000-enemy load.',
     tech: ['C++', 'Qt6', 'QML', 'CMake'],
+    image: '/projects/skyward.gif',
     why:
       "I wanted to find where the C++ and QML boundary starts to hurt. Turns out you can push it further than expected.",
     order: 2,
